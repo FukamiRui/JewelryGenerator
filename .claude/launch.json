@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lodgespa-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/rui/Downloads/lodgespa-booking", "run", "dev"],
+      "port": 3000
+    }
+  ]
+}
