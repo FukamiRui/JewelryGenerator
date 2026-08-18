@@ -11,7 +11,7 @@ interface FalFluxResponse {
 
 export interface GenerateImageOptions {
   aspectRatio?: "1:1" | "4:3";
-  outputFormat?: "webp" | "png";
+  outputFormat?: "jpeg" | "png";
   guidanceScale?: number; // recommended 3.5–4.5
   numImages?: number; // e.g. 4 for the "4 patterns" UX described in the spec
 }
@@ -22,7 +22,9 @@ export async function generateJewelryImages(
 ): Promise<string[]> {
   const {
     aspectRatio = "1:1",
-    outputFormat = "webp",
+    // fal.ai's FLUX.1 [pro] v1.1 endpoint only accepts 'jpeg' or 'png' —
+    // 'webp' (the original default here) now fails with a 422 "literal_error".
+    outputFormat = "jpeg",
     guidanceScale = 4,
     numImages = 1,
   } = options;
@@ -97,7 +99,7 @@ export async function generateJewelryImageFromReference(
         image_url: referenceImageUrl,
         guidance_scale: 3.5,
         num_images: 1,
-        output_format: "webp",
+        output_format: "jpeg", // same fal.ai constraint as generateJewelryImages — webp is rejected
       }),
       signal: AbortSignal.timeout(30_000),
     });

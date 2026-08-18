@@ -8,7 +8,10 @@ import { getBrowserClient } from "@/lib/supabase-browser";
 import { AuthProvider } from "@/lib/auth-context";
 import { fetchTenant, bootstrapTenant, ApiRequestError } from "@/lib/api-client";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
+import { TutorialModal } from "@/components/ui/TutorialModal";
 import type { Tenant } from "@/types/domain";
+
+const TUTORIAL_SEEN_KEY = "atelier_tutorial_seen";
 
 const NAV_ITEMS = [
   { href: "/simulator", label: "Simulator" },
@@ -17,9 +20,18 @@ const NAV_ITEMS = [
   { href: "/messages", label: "Messages" },
   { href: "/portfolio", label: "Portfolio" },
   { href: "/settings", label: "Settings" },
+  { href: "/help", label: "Help" },
 ];
 
-function Navbar({ tenant, onSignOut }: { tenant: Tenant | null; onSignOut: () => void }) {
+function Navbar({
+  tenant,
+  onSignOut,
+  onOpenTutorial,
+}: {
+  tenant: Tenant | null;
+  onSignOut: () => void;
+  onOpenTutorial: () => void;
+}) {
   const pathname = usePathname();
   const remaining = tenant ? tenant.monthly_credit_limit - tenant.credits_used_this_month : null;
 
@@ -49,6 +61,12 @@ function Navbar({ tenant, onSignOut }: { tenant: Tenant | null; onSignOut: () =>
             {tenant.company_name} · {remaining} / {tenant.monthly_credit_limit} credits left
           </span>
         )}
+        <button
+          onClick={onOpenTutorial}
+          className="rounded-full border border-line-light px-3 py-1 text-xs text-stone transition-colors hover:border-gold hover:text-ink"
+        >
+          How this works
+        </button>
         <button onClick={onSignOut} className="text-xs text-stone hover:text-ink">
           Sign out
         </button>
@@ -133,6 +151,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const [userEmail, setUserEmail] = useState("");
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "no_tenant" | "error">("loading");
+  const [tutorialOpen, setTutorialOpen] = useState(false);
 
   const loadTenant = useCallback(async (token: string) => {
     try {
@@ -175,6 +194,26 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
     return () => sub.subscription.unsubscribe();
   }, [router, loadTenant]);
+
+  useEffect(() => {
+    if (status !== "ready") return;
+    if (!window.localStorage.getItem(TUTORIAL_SEEN_KEY)) {
+      setTutorialOpen(true);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    function handleOpenRequest() {
+      setTutorialOpen(true);
+    }
+    window.addEventListener("atelier:open-tutorial", handleOpenRequest);
+    return () => window.removeEventListener("atelier:open-tutorial", handleOpenRequest);
+  }, []);
+
+  function handleCloseTutorial() {
+    setTutorialOpen(false);
+    window.localStorage.setItem(TUTORIAL_SEEN_KEY, "1");
+  }
 
   async function handleSignOut() {
     const supabase = getBrowserClient();
@@ -225,9 +264,10 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       }}
     >
       <div className="flex h-screen flex-col">
-        <Navbar tenant={tenant} onSignOut={handleSignOut} />
+        <Navbar tenant={tenant} onSignOut={handleSignOut} onOpenTutorial={() => setTutorialOpen(true)} />
         <div className="flex-1 overflow-hidden">{children}</div>
       </div>
+      <TutorialModal open={tutorialOpen} onClose={handleCloseTutorial} />
     </AuthProvider>
   );
 }

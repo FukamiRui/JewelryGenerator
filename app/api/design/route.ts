@@ -9,7 +9,7 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
   let query = supabase
     .from("designs")
     .select(
-      "id, customer_name, generated_image_url, calculated_price_usd, created_at, share_token, categories(name)"
+      "id, title, customer_name, is_personal, generated_image_url, calculated_price_usd, created_at, share_token, angle, angle_set_id, categories(name)"
     )
     .order("created_at", { ascending: false })
     .limit(50);

@@ -8,11 +8,7 @@ import { CustomerAuthProvider } from "@/lib/customer-auth-context";
 import { fetchCustomer, bootstrapCustomer, ApiRequestError, type Customer } from "@/lib/api-client";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
 
-const NAV_ITEMS = [
-  { href: "/feed", label: "Feed" },
-  { href: "/shops", label: "Browse shops" },
-  { href: "/customer/messages", label: "Messages" },
-];
+const NAV_ITEMS = [{ href: "/customer/messages", label: "Messages" }];
 
 function Navbar({ customer, onSignOut }: { customer: Customer; onSignOut: () => void }) {
   const pathname = usePathname();

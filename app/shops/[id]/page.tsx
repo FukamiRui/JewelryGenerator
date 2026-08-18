@@ -6,14 +6,16 @@ import { useParams, useRouter } from "next/navigation";
 import {
   fetchShopProfile,
   startConversation,
-  followShop,
-  unfollowShop,
   type ShopProfile,
   type ShopPortfolioItem,
 } from "@/lib/api-client";
 import { getBrowserClient } from "@/lib/supabase-browser";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
 import { StarRating } from "@/components/ui/StarRating";
+
+// Reached via a direct link a shop shares (e.g. from Instagram, a business
+// card QR code) — not a public directory. See README for why there's no
+// browse/search page: that's the marketplace-discovery surface we cut.
 
 function PortfolioDetailModal({ item, onClose }: { item: ShopPortfolioItem; onClose: () => void }) {
   return (
@@ -63,55 +65,13 @@ function ShopProfileInner() {
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ShopPortfolioItem | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [followBusy, setFollowBusy] = useState(false);
 
   useEffect(() => {
-    async function load() {
-      const supabase = getBrowserClient();
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token ?? undefined;
-      setAccessToken(token ?? null);
-
-      try {
-        setProfile(await fetchShopProfile(params.id, token));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not load this shop.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
+    fetchShopProfile(params.id)
+      .then(setProfile)
+      .catch((err) => setError(err instanceof Error ? err.message : "Could not load this shop."))
+      .finally(() => setLoading(false));
   }, [params.id]);
-
-  async function handleToggleFollow() {
-    if (!accessToken) {
-      router.push(`/customer/login?next=/shops/${params.id}`);
-      return;
-    }
-    if (!profile) return;
-    setFollowBusy(true);
-    try {
-      if (profile.is_following) {
-        await unfollowShop(accessToken, params.id);
-      } else {
-        await followShop(accessToken, params.id);
-      }
-      setProfile((prev) =>
-        prev
-          ? {
-              ...prev,
-              is_following: !prev.is_following,
-              follower_count: prev.follower_count + (prev.is_following ? -1 : 1),
-            }
-          : prev
-      );
-    } catch (err) {
-      toast.push(err instanceof Error ? err.message : "Could not update follow status.");
-    } finally {
-      setFollowBusy(false);
-    }
-  }
 
   async function handleMessage() {
     setStarting(true);
@@ -145,7 +105,6 @@ function ShopProfileInner() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-2 bg-pearl px-6 text-center">
         <p className="font-display text-lg text-ink">{error ?? "Shop not found"}</p>
-        <a href="/shops" className="text-xs text-gold hover:underline">← Back to shops</a>
       </div>
     );
   }
@@ -153,11 +112,8 @@ function ShopProfileInner() {
   return (
     <div className="min-h-screen bg-pearl">
       <div className="flex items-center justify-between border-b border-line-light bg-white px-6 py-3">
-        <div className="flex items-center gap-6">
-          <a href="/shops" className="font-display text-lg text-ink">Atelier</a>
-          <a href="/feed" className="text-xs text-stone hover:text-ink">Feed</a>
-        </div>
-        <a href="/customer/login" className="text-xs text-stone hover:text-ink">Sign in</a>
+        <span className="font-display text-lg text-ink">Atelier</span>
+        <a href="/customer/login" className="text-xs text-stone transition-colors hover:text-ink">Sign in</a>
       </div>
 
       <div className="relative h-48 w-full bg-white">
@@ -182,7 +138,13 @@ function ShopProfileInner() {
                 </span>
               )}
             </div>
-            {profile.shop.location && <p className="mt-0.5 text-sm text-stone">{profile.shop.location}</p>}
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-stone">
+              {profile.shop.location && <span>{profile.shop.location}</span>}
+              {profile.shop.location && profile.shop.founded_year != null && <span>·</span>}
+              {profile.shop.founded_year != null && (
+                <span>{new Date().getFullYear() - profile.shop.founded_year} years in the craft</span>
+              )}
+            </div>
             {profile.shop.specialty_materials.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {profile.shop.specialty_materials.map((m) => (
@@ -213,30 +175,22 @@ function ShopProfileInner() {
               {profile.returns_accepted && profile.return_policy_note && ` · ${profile.return_policy_note}`}
             </p>
             {profile.shop.bio && <p className="mt-3 max-w-lg text-sm text-stone">{profile.shop.bio}</p>}
-            <p className="mt-2 font-mono text-xs text-stone">
-              {profile.follower_count} follower{profile.follower_count === 1 ? "" : "s"}
-            </p>
+            {profile.shop.contact_email && (
+              <a
+                href={`mailto:${profile.shop.contact_email}`}
+                className="mt-2 inline-block text-sm text-gold hover:underline"
+              >
+                {profile.shop.contact_email}
+              </a>
+            )}
           </div>
-          <div className="flex flex-shrink-0 gap-2">
-            <button
-              onClick={handleToggleFollow}
-              disabled={followBusy}
-              className={`rounded-sm border px-4 py-2.5 text-sm disabled:opacity-50 ${
-                profile.is_following
-                  ? "border-line-light text-ink hover:border-ink"
-                  : "border-gold text-ink hover:bg-gold"
-              }`}
-            >
-              {profile.is_following ? "Following" : "Follow"}
-            </button>
-            <button
-              onClick={handleMessage}
-              disabled={starting}
-              className="rounded-sm bg-ink px-5 py-2.5 text-sm text-pearl hover:bg-ink/90 disabled:opacity-50"
-            >
-              {starting ? "Starting…" : "Message this shop"}
-            </button>
-          </div>
+          <button
+            onClick={handleMessage}
+            disabled={starting}
+            className="flex-shrink-0 rounded-sm bg-ink px-5 py-2.5 text-sm text-pearl transition-colors hover:bg-ink/90 disabled:opacity-50"
+          >
+            {starting ? "Starting…" : "Message this shop"}
+          </button>
         </div>
 
         {profile.portfolio.length > 0 && (

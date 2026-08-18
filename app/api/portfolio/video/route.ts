@@ -3,6 +3,7 @@ import { requireTenant, getServiceClient } from "@/lib/supabase";
 import { withErrorHandling, Errors, AppError } from "@/lib/api-error";
 import { uploadPortfolioImage, uploadPortfolioVideo, persistGeneratedVideo } from "@/lib/image-cache";
 import { generateJewelryVideo, VIDEO_GENERATION_CREDIT_COST, DEFAULT_MOTION_PROMPT } from "@/lib/fal-video";
+import { checkTenantGenerationCooldown } from "@/lib/rate-limit";
 
 // Posts a video to a shop's portfolio — either a raw upload, or one
 // generated from a source image (an existing design or a fresh upload) via
@@ -26,14 +27,20 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
 
   const { data: tenant, error: tenantErr } = await supabase
     .from("tenants")
-    .select("monthly_credit_limit, credits_used_this_month")
+    .select("monthly_credit_limit, credits_used_this_month, subscription_status")
     .eq("id", tenantId)
     .single();
 
   if (tenantErr || !tenant) throw new AppError(500, "Could not load your store.", "internal_error");
+  // Video (generated or uploaded) is a subscriber-only feature, not just a
+  // metered one — a free-tier shop can't post video at any credit price.
+  if (tenant.subscription_status !== "active") {
+    throw Errors.subscriptionRequired("Video posts require an active subscription — subscribe to unlock.");
+  }
   if (tenant.credits_used_this_month + VIDEO_GENERATION_CREDIT_COST > tenant.monthly_credit_limit) {
     throw Errors.creditLimitReached();
   }
+  await checkTenantGenerationCooldown(supabase, tenantId, "portfolio_items");
 
   let videoUrl: string;
   let posterImageUrl: string | null = null;

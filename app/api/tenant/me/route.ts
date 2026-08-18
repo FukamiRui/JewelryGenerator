@@ -3,7 +3,7 @@ import { requireTenant } from "@/lib/supabase";
 import { withErrorHandling, Errors, AppError } from "@/lib/api-error";
 
 const TENANT_FIELDS =
-  "id, company_name, plan, monthly_credit_limit, credits_used_this_month, logo_url, cover_image_url, bio, location, latitude, longitude, specialty_materials, returns_accepted, return_policy_note, max_design_revisions";
+  "id, company_name, plan, monthly_credit_limit, credits_used_this_month, logo_url, cover_image_url, bio, location, latitude, longitude, specialty_materials, returns_accepted, return_policy_note, max_design_revisions, founded_year, subscription_status, contact_email";
 
 const MAX_SPECIALTY_MATERIALS = 20;
 
@@ -16,7 +16,14 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
     .eq("id", tenantId)
     .single();
 
-  if (error || !tenant) {
+  // A real query failure (e.g. a column a pending migration hasn't added
+  // yet) must not be mistaken for "no store" — that sends every signed-in
+  // shop to the account-setup screen instead of surfacing the real error.
+  if (error) {
+    console.error("[tenant/me] query failed:", error);
+    throw new AppError(500, "Could not load your store account.", "internal_error");
+  }
+  if (!tenant) {
     return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
   }
 
@@ -32,7 +39,11 @@ interface UpdateTenantBody {
   longitude?: number | null;
   specialty_materials?: string[];
   max_design_revisions?: number;
+  founded_year?: number | null;
+  contact_email?: string | null;
 }
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const PATCH = withErrorHandling(async (req: NextRequest) => {
   const { supabase, tenantId } = await requireTenant(req);
@@ -80,6 +91,23 @@ export const PATCH = withErrorHandling(async (req: NextRequest) => {
       throw Errors.badRequest("max_design_revisions must be an integer between 1 and 5.");
     }
     update.max_design_revisions = body.max_design_revisions;
+  }
+  if (body.founded_year !== undefined) {
+    const currentYear = new Date().getFullYear();
+    if (
+      body.founded_year !== null &&
+      (!Number.isInteger(body.founded_year) || body.founded_year < 1900 || body.founded_year > currentYear)
+    ) {
+      throw Errors.badRequest(`founded_year must be an integer between 1900 and ${currentYear}.`);
+    }
+    update.founded_year = body.founded_year;
+  }
+  if (body.contact_email !== undefined) {
+    const trimmed = body.contact_email?.trim() || null;
+    if (trimmed && !EMAIL_PATTERN.test(trimmed)) {
+      throw Errors.badRequest("contact_email must be a valid email address.");
+    }
+    update.contact_email = trimmed;
   }
   if (Object.keys(update).length === 0) throw Errors.badRequest("Nothing to update.");
 

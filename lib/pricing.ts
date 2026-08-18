@@ -13,10 +13,25 @@ interface CalculatePriceInput {
   gemstones: Material[];
   estimatedWeightGrams: number;
   goldRates: Record<MetalCode, GoldRate>;
+  manualMaterialCostUsd?: number;
+  manualProfitUsd?: number;
 }
 
 export function calculatePrice(input: CalculatePriceInput): PriceBreakdown {
-  const { category, metal, gemstones, estimatedWeightGrams, goldRates } = input;
+  const { category, metal, gemstones, estimatedWeightGrams, goldRates, manualMaterialCostUsd, manualProfitUsd } = input;
+
+  if (manualMaterialCostUsd !== undefined && manualProfitUsd !== undefined) {
+    const materialCostUsd = Math.round(manualMaterialCostUsd * 100) / 100;
+    const profitUsd = Math.round(manualProfitUsd * 100) / 100;
+    return {
+      metal_cost_usd: materialCostUsd,
+      gemstone_cost_usd: 0,
+      processing_cost_usd: profitUsd,
+      subtotal_usd: materialCostUsd,
+      total_usd: Math.round((materialCostUsd + profitUsd) * 100) / 100,
+      manual: true,
+    };
+  }
 
   const metalCode = resolveMetalCode(metal);
   const spotRate = goldRates[metalCode];
@@ -44,5 +59,6 @@ export function calculatePrice(input: CalculatePriceInput): PriceBreakdown {
     processing_cost_usd: Math.round(processingCostUsd * 100) / 100,
     subtotal_usd: Math.round(subtotalUsd * 100) / 100,
     total_usd: totalUsd,
+    manual: false,
   };
 }

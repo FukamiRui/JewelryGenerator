@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "lodgespa-dev",
+      "name": "jewelry-ai-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "/Users/rui/Downloads/lodgespa-booking", "run", "dev"],
-      "port": 3000
+      "runtimeArgs": ["run", "dev", "--", "-p", "3002"],
+      "port": 3002
     }
   ]
 }

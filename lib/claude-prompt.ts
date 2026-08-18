@@ -5,23 +5,28 @@ if (!process.env.GROQ_API_KEY) {
 }
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_MODEL = "llama-3.3-70b-versatile"; // free-tier model on Groq
+const GROQ_MODEL = "openai/gpt-oss-120b"; // Groq no longer serves llama-3.3-70b-versatile as of late 2025
 
 const SYSTEM_PROMPT = `You are a world-class jewelry artisan and prompt engineer.
 Given the selected category, metal, gemstone(s), and finish for a piece of jewelry,
 combine them into a single English prompt for FLUX.1 [pro] that maximizes photorealism:
 describe metallic luster, gemstone clarity and brilliance, prong/setting detail, and
-reflected light. Output ONLY the prompt text — no explanation, no markdown, no preamble.`;
+reflected light. If a size/dimensions or fabrication method/tools note is provided, work
+it naturally into the description (e.g. proportions matching the stated size, surface
+texture matching hand-forging vs. CNC-milled precision) rather than listing it verbatim.
+Output ONLY the prompt text — no explanation, no markdown, no preamble.`;
 
 interface BuildPromptInput {
   category: Category;
   metal: Material;
   gemstones: Material[];
   finish: Material | null;
+  sizeNote?: string;
+  fabricationNote?: string;
 }
 
 export async function buildFluxPrompt(input: BuildPromptInput): Promise<string> {
-  const { category, metal, gemstones, finish } = input;
+  const { category, metal, gemstones, finish, sizeNote, fabricationNote } = input;
 
   const conditionSummary = [
     `Category: ${category.name} (${category.ai_prompt_tag})`,
@@ -30,7 +35,11 @@ export async function buildFluxPrompt(input: BuildPromptInput): Promise<string> 
       ? `Gemstones: ${gemstones.map((g) => `${g.name} (${g.ai_prompt_tag})`).join(", ")}`
       : "Gemstones: none",
     finish ? `Finish: ${finish.name} (${finish.ai_prompt_tag})` : "Finish: default",
-  ].join("\n");
+    sizeNote?.trim() ? `Size/dimensions: ${sizeNote.trim()}` : null,
+    fabricationNote?.trim() ? `Fabrication method/tools: ${fabricationNote.trim()}` : null,
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
 
   let res: Response;
   try {
@@ -42,7 +51,8 @@ export async function buildFluxPrompt(input: BuildPromptInput): Promise<string> 
       },
       body: JSON.stringify({
         model: GROQ_MODEL,
-        max_tokens: 400,
+        max_tokens: 500,
+        reasoning_effort: "low", // gpt-oss is a reasoning model — without this, reasoning tokens can eat the whole budget and leave content empty
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: conditionSummary },

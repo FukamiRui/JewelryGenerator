@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
+import { isAuthorizedCronRequest } from "@/lib/cron-auth";
 
-const CRON_SECRET = process.env.CRON_SECRET!;
-
-export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get("x-cron-secret");
-  if (!CRON_SECRET || authHeader !== CRON_SECRET) {
+async function handle(req: NextRequest) {
+  if (!isAuthorizedCronRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -22,3 +20,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Reset failed." }, { status: 500 });
   }
 }
+
+// GET: Vercel Cron (sends GET + Authorization: Bearer $CRON_SECRET).
+// POST: external/manual schedulers driven by the x-cron-secret header.
+export const GET = handle;
+export const POST = handle;

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getBrowserClient } from "@/lib/supabase-browser";
 import { bootstrapCustomer } from "@/lib/api-client";
 
-type Mode = "sign_in" | "sign_up";
+type Mode = "sign_in" | "sign_up" | "forgot";
 
 function translateAuthError(message: string): string {
   if (message.includes("Invalid login credentials")) return "Email or password is incorrect.";
@@ -35,6 +35,7 @@ function CustomerLoginForm() {
   const [displayName, setDisplayName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resetSent, setResetSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,6 +50,15 @@ function CustomerLoginForm() {
     const supabase = getBrowserClient();
 
     try {
+      if (mode === "forgot") {
+        const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password?type=customer`,
+        });
+        if (resetErr) throw resetErr;
+        setResetSent(true);
+        return;
+      }
+
       if (mode === "sign_up") {
         const { data, error: signUpErr } = await supabase.auth.signUp({ email, password });
         if (signUpErr) throw signUpErr;
@@ -73,73 +83,113 @@ function CustomerLoginForm() {
     }
   }
 
+  function switchMode(next: Mode) {
+    setMode(next);
+    setError(null);
+    setResetSent(false);
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-pearl px-6">
       <div className="w-full max-w-sm">
         <p className="font-display text-2xl text-ink">Atelier</p>
         <p className="mt-1 text-sm text-stone">
-          {mode === "sign_in" ? "Sign in to message a jeweler" : "Create your account"}
+          {mode === "sign_in" && "Sign in to message a jeweler"}
+          {mode === "sign_up" && "Create your account"}
+          {mode === "forgot" && "Reset your password"}
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-3">
-          {mode === "sign_up" && (
+        {mode === "forgot" && resetSent ? (
+          <div className="mt-8 flex flex-col gap-3">
+            <p className="rounded-sm bg-ink/5 px-3 py-2.5 text-sm text-ink">
+              If an account exists for {email}, a password reset link is on its way — check your email.
+            </p>
+            <button
+              onClick={() => switchMode("sign_in")}
+              className="self-start text-xs text-stone hover:text-ink"
+            >
+              Back to sign in
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-3">
+            {mode === "sign_up" && (
+              <input
+                type="text"
+                placeholder="Your name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                required
+                className="rounded-sm border border-line-light bg-white px-3 py-2.5 text-sm focus:border-gold"
+              />
+            )}
             <input
-              type="text"
-              placeholder="Your name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
               className="rounded-sm border border-line-light bg-white px-3 py-2.5 text-sm focus:border-gold"
             />
-          )}
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-            className="rounded-sm border border-line-light bg-white px-3 py-2.5 text-sm focus:border-gold"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-            autoComplete={mode === "sign_in" ? "current-password" : "new-password"}
-            className="rounded-sm border border-line-light bg-white px-3 py-2.5 text-sm focus:border-gold"
-          />
+            {mode !== "forgot" && (
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                autoComplete={mode === "sign_in" ? "current-password" : "new-password"}
+                className="rounded-sm border border-line-light bg-white px-3 py-2.5 text-sm focus:border-gold"
+              />
+            )}
 
-          {error && (
-            <p role="alert" className="rounded-sm bg-ink/5 px-3 py-2 text-xs text-ink">
-              {error}
-            </p>
-          )}
+            {mode === "sign_in" && (
+              <button
+                type="button"
+                onClick={() => switchMode("forgot")}
+                className="self-end text-xs text-stone hover:text-ink"
+              >
+                Forgot password?
+              </button>
+            )}
 
+            {error && (
+              <p role="alert" className="rounded-sm bg-ink/5 px-3 py-2 text-xs text-ink">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="mt-2 rounded-sm bg-ink py-2.5 text-sm text-pearl transition-colors hover:bg-ink/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {submitting
+                ? "Please wait…"
+                : mode === "sign_in"
+                  ? "Sign in"
+                  : mode === "sign_up"
+                    ? "Create account"
+                    : "Send reset link"}
+            </button>
+          </form>
+        )}
+
+        {mode !== "forgot" && (
           <button
-            type="submit"
-            disabled={submitting}
-            className="mt-2 rounded-sm bg-ink py-2.5 text-sm text-pearl transition-colors hover:bg-ink/90 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => switchMode(mode === "sign_in" ? "sign_up" : "sign_in")}
+            className="mt-4 text-xs text-stone hover:text-ink"
           >
-            {submitting ? "Please wait…" : mode === "sign_in" ? "Sign in" : "Create account"}
+            {mode === "sign_in" ? "New here? Create an account" : "Already have an account? Sign in"}
           </button>
-        </form>
-
-        <button
-          onClick={() => {
-            setMode(mode === "sign_in" ? "sign_up" : "sign_in");
-            setError(null);
-          }}
-          className="mt-4 text-xs text-stone hover:text-ink"
-        >
-          {mode === "sign_in" ? "New here? Create an account" : "Already have an account? Sign in"}
-        </button>
-
-        <a href="/shops" className="mt-6 block text-center text-xs text-stone hover:text-ink">
-          ← Browse shops without signing in
-        </a>
+        )}
+        {mode === "forgot" && !resetSent && (
+          <button onClick={() => switchMode("sign_in")} className="mt-4 text-xs text-stone hover:text-ink">
+            Back to sign in
+          </button>
+        )}
       </div>
     </div>
   );

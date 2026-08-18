@@ -6,7 +6,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 // tags). No new API key required.
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_MODEL = "llama-3.3-70b-versatile";
+const GROQ_MODEL = "openai/gpt-oss-120b"; // Groq no longer serves llama-3.3-70b-versatile as of late 2025
 
 const SYSTEM_PROMPT = `You are a friendly, expert jewelry design consultant. A customer has
 generated several AI design variations in a chat with a jewelry shop but hasn't found one they
@@ -60,7 +60,8 @@ export async function generateDesignAdvice(
       },
       body: JSON.stringify({
         model: GROQ_MODEL,
-        max_tokens: 200,
+        max_tokens: 300,
+        reasoning_effort: "low", // gpt-oss is a reasoning model — without this, reasoning tokens can eat the whole budget and leave content empty
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           {

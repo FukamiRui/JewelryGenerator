@@ -22,6 +22,9 @@ export interface Tenant {
   returns_accepted: boolean;
   return_policy_note: string | null;
   max_design_revisions: number;
+  founded_year: number | null;
+  subscription_status: "free" | "active" | "past_due" | "canceled";
+  contact_email: string | null;
 }
 
 export interface Category {
@@ -60,6 +63,11 @@ export interface DesignSelection {
   finish_material_id: string | null;
   estimated_weight_grams: number; // derived from size/volume estimate on the frontend
   customer_name?: string;
+  is_personal?: boolean; // "For myself" mode — a personal exploration, not a customer estimate
+  size_note?: string; // e.g. "US ring size 7", "18mm diameter" — fed into the AI prompt
+  fabrication_note?: string; // e.g. "hand-forged", "CNC-milled, hand-set stones" — fed into the AI prompt
+  manual_material_cost_usd?: number; // shop-entered override, replaces the automatic spot-price calc when set with manual_profit_usd
+  manual_profit_usd?: number;
 }
 
 export interface PromptResult {
@@ -72,6 +80,7 @@ export interface PriceBreakdown {
   processing_cost_usd: number;
   subtotal_usd: number;
   total_usd: number; // after markup
+  manual?: boolean; // true when material cost + profit were entered directly instead of the automatic spot-price calc
 }
 
 export interface GenerateDesignResponse {

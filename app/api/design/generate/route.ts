@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireTenant } from "@/lib/supabase";
 import { withErrorHandling, Errors } from "@/lib/api-error";
 import { generateDesignForTenant } from "@/lib/design-generation";
+import { checkTenantGenerationCooldown } from "@/lib/rate-limit";
 
 interface DesignRequestBody {
   category_id: string;
@@ -10,6 +11,11 @@ interface DesignRequestBody {
   finish_material_id: string | null;
   estimated_weight_grams: number;
   customer_name?: string;
+  is_personal?: boolean;
+  size_note?: string;
+  fabrication_note?: string;
+  manual_material_cost_usd?: number;
+  manual_profit_usd?: number;
 }
 
 export const POST = withErrorHandling(async (req: NextRequest) => {
@@ -25,6 +31,17 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
   if (!body.estimated_weight_grams || body.estimated_weight_grams <= 0) {
     throw Errors.badRequest("estimated_weight_grams must be a positive number.");
   }
+  if (
+    (body.manual_material_cost_usd !== undefined) !== (body.manual_profit_usd !== undefined)
+  ) {
+    throw Errors.badRequest("Manual pricing needs both material cost and profit.");
+  }
+  if (
+    (body.manual_material_cost_usd !== undefined && body.manual_material_cost_usd < 0) ||
+    (body.manual_profit_usd !== undefined && body.manual_profit_usd < 0)
+  ) {
+    throw Errors.badRequest("Manual pricing values must be zero or greater.");
+  }
 
   const { data: tenant, error: tenantErr } = await supabase
     .from("tenants")
@@ -36,6 +53,7 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
   if (tenant.credits_used_this_month >= tenant.monthly_credit_limit) {
     throw Errors.creditLimitReached();
   }
+  await checkTenantGenerationCooldown(supabase, tenantId, "designs");
 
   const result = await generateDesignForTenant(supabase, tenantId, body);
 

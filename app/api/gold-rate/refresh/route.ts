@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { fetchAllSpotPrices } from "@/lib/gold-api";
+import { isAuthorizedCronRequest } from "@/lib/cron-auth";
 
 // Protects this endpoint from public invocation — only your cron scheduler
 // (e.g. Vercel Cron, Supabase Edge Function schedule) should call it.
-const CRON_SECRET = process.env.CRON_SECRET!;
-
-export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get("x-cron-secret");
-  if (!CRON_SECRET || authHeader !== CRON_SECRET) {
+async function handle(req: NextRequest) {
+  if (!isAuthorizedCronRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -38,3 +36,8 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+// GET: Vercel Cron (sends GET + Authorization: Bearer $CRON_SECRET).
+// POST: external/manual schedulers driven by the x-cron-secret header.
+export const GET = handle;
+export const POST = handle;

@@ -23,6 +23,29 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
 export const POST = withErrorHandling(async (req: NextRequest) => {
   const { supabase, tenantId } = await requireTenant(req);
 
+  // Free tier is a limited taste of the product, not a parallel free plan —
+  // capped at 1 portfolio piece total so subscribing is worth more than
+  // just buying the same 300 credits piecemeal (see README).
+  const { data: tenant, error: tenantErr } = await supabase
+    .from("tenants")
+    .select("subscription_status")
+    .eq("id", tenantId)
+    .single();
+  if (tenantErr || !tenant) throw new AppError(500, "Could not load your store.", "internal_error");
+
+  if (tenant.subscription_status !== "active") {
+    const { count, error: countErr } = await supabase
+      .from("portfolio_items")
+      .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId);
+    if (countErr) throw new AppError(500, "Could not check your portfolio.", "internal_error");
+    if ((count ?? 0) >= 1) {
+      throw Errors.subscriptionRequired(
+        "Free plan is limited to 1 portfolio piece — subscribe to add more."
+      );
+    }
+  }
+
   const form = await req.formData().catch(() => {
     throw Errors.badRequest("Request body must be multipart/form-data.");
   });

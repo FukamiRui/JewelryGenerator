@@ -84,6 +84,8 @@ export async function updateTenant(
     longitude?: number | null;
     specialty_materials?: string[];
     max_design_revisions?: number;
+    founded_year?: number | null;
+    contact_email?: string | null;
   }
 ): Promise<Tenant> {
   const { tenant } = await apiFetch<{ tenant: Tenant }>("/api/tenant/me", {
@@ -190,6 +192,15 @@ export async function generateDesignFromReferenceInStore(
   if (input.finish_material_id) form.set("finish_material_id", input.finish_material_id);
   form.set("estimated_weight_grams", String(input.estimated_weight_grams));
   if (input.customer_name) form.set("customer_name", input.customer_name);
+  if (input.is_personal) form.set("is_personal", "true");
+  if (input.size_note) form.set("size_note", input.size_note);
+  if (input.fabrication_note) form.set("fabrication_note", input.fabrication_note);
+  if (input.manual_material_cost_usd !== undefined) {
+    form.set("manual_material_cost_usd", String(input.manual_material_cost_usd));
+  }
+  if (input.manual_profit_usd !== undefined) {
+    form.set("manual_profit_usd", String(input.manual_profit_usd));
+  }
 
   return apiFetch<GenerateDesignResponse>("/api/design/generate-from-reference", {
     method: "POST",
@@ -198,13 +209,54 @@ export async function generateDesignFromReferenceInStore(
   });
 }
 
+export interface AngleView {
+  angle: "front" | "side" | "diagonal" | "bottom";
+  design_id: string;
+  generated_image_url: string;
+}
+
+export async function generateAngleViews(
+  accessToken: string,
+  designId: string
+): Promise<{ angle_set_id: string; views: AngleView[] }> {
+  return apiFetch<{ angle_set_id: string; views: AngleView[] }>("/api/design/generate-angles", {
+    method: "POST",
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({ design_id: designId }),
+  });
+}
+
+/**
+ * The PDF route requires the same Authorization: Bearer header every other
+ * tenant route does, so a plain <a href> click (no custom headers on a
+ * browser navigation) always 401s — this fetches it with the header
+ * attached and opens the result as a blob URL instead.
+ */
+export async function downloadDesignPdf(accessToken: string, designId: string): Promise<void> {
+  const res = await fetch(`/api/design/pdf/${designId}`, {
+    headers: authHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const body: ApiErrorBody = await res.json().catch(() => ({ error: `Request failed (${res.status})` }));
+    throw new ApiRequestError(res.status, body);
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  window.open(url, "_blank");
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
+}
+
 export interface DesignHistoryRow {
   id: string;
+  title: string | null;
   customer_name: string | null;
+  is_personal: boolean;
   generated_image_url: string;
   calculated_price_usd: number;
   created_at: string;
   share_token: string;
+  angle: AngleView["angle"] | null;
+  angle_set_id: string | null;
   categories: { name: string } | null;
 }
 
@@ -221,61 +273,31 @@ export async function fetchDesignHistory(
   return designs;
 }
 
+export async function updateDesignTitle(
+  accessToken: string,
+  designId: string,
+  title: string | null
+): Promise<void> {
+  await apiFetch(`/api/design/${designId}`, {
+    method: "PATCH",
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({ title }),
+  });
+}
+
+export async function deleteDesign(accessToken: string, designId: string): Promise<void> {
+  await apiFetch(`/api/design/${designId}`, {
+    method: "DELETE",
+    headers: authHeaders(accessToken),
+  });
+}
+
 // =========================================================
-// Marketplace: shops, customer profile, conversations, chat
+// Shop profile, customer profile, conversations, chat
 // =========================================================
-
-export interface ShopSummary {
-  id: string;
-  company_name: string;
-  bio: string | null;
-  logo_url: string | null;
-  cover_image_url: string | null;
-  location: string | null;
-  specialty_materials: string[];
-  verified: boolean;
-  returns_accepted: boolean;
-  average_rating: number | null;
-  review_count: number;
-  distance_km: number | null;
-}
-
-export interface ShopFilterOptions {
-  locations: string[];
-  materials: string[];
-}
-
-export interface ShopSearchFilters {
-  q?: string;
-  location?: string;
-  materials?: string[];
-  verified?: boolean;
-  returnsAccepted?: boolean;
-  minRating?: number;
-  near?: { lat: number; lng: number };
-}
-
-export async function fetchShops(
-  filters: ShopSearchFilters = {}
-): Promise<{ shops: ShopSummary[]; filters: ShopFilterOptions }> {
-  const params = new URLSearchParams();
-  if (filters.q) params.set("q", filters.q);
-  if (filters.location) params.set("location", filters.location);
-  if (filters.materials?.length) params.set("materials", filters.materials.join(","));
-  if (filters.verified) params.set("verified", "true");
-  if (filters.returnsAccepted) params.set("returns_accepted", "true");
-  if (filters.minRating) params.set("min_rating", String(filters.minRating));
-  if (filters.near) {
-    params.set("lat", String(filters.near.lat));
-    params.set("lng", String(filters.near.lng));
-  }
-
-  const qs = params.toString();
-  return apiFetch<{ shops: ShopSummary[]; filters: ShopFilterOptions }>(
-    qs ? `/api/shops?${qs}` : "/api/shops",
-    {}
-  );
-}
+// No public shop directory/search on purpose — a shop's profile is reached
+// via a direct link the shop shares, not by a customer browsing a
+// marketplace. See README for why.
 
 export interface ShopPortfolioItem {
   id: string;
@@ -285,7 +307,6 @@ export interface ShopPortfolioItem {
   caption: string | null;
   description: string | null;
   materials: string | null;
-  boost_expires_at?: string | null;
 }
 
 export interface ShopProfile {
@@ -297,13 +318,13 @@ export interface ShopProfile {
     cover_image_url: string | null;
     location: string | null;
     specialty_materials: string[];
+    founded_year: number | null;
+    contact_email: string | null;
   };
   verified: boolean;
   returns_accepted: boolean;
   return_policy_note: string | null;
   average_response_hours: number | null;
-  follower_count: number;
-  is_following: boolean;
   average_rating: number | null;
   review_count: number;
   reviews: { id: string; rating: number; comment: string | null; created_at: string; customers: { display_name: string } | null }[];
@@ -318,28 +339,6 @@ export async function fetchShopProfile(shopId: string, accessToken?: string): Pr
   return apiFetch<ShopProfile>(`/api/shops/${shopId}`, {
     headers: accessToken ? authHeaders(accessToken) : undefined,
   });
-}
-
-export async function followShop(accessToken: string, tenantId: string): Promise<void> {
-  await apiFetch<{ ok: true }>("/api/follows", {
-    method: "POST",
-    headers: authHeaders(accessToken),
-    body: JSON.stringify({ tenant_id: tenantId }),
-  });
-}
-
-export async function unfollowShop(accessToken: string, tenantId: string): Promise<void> {
-  await apiFetch<{ ok: true }>(`/api/follows/${tenantId}`, {
-    method: "DELETE",
-    headers: authHeaders(accessToken),
-  });
-}
-
-export async function fetchFollowedShopIds(accessToken: string): Promise<string[]> {
-  const { tenant_ids } = await apiFetch<{ tenant_ids: string[] }>("/api/follows", {
-    headers: authHeaders(accessToken),
-  });
-  return tenant_ids;
 }
 
 export interface Customer {
@@ -467,6 +466,37 @@ export async function startStripeOnboarding(accessToken: string): Promise<string
   const { url } = await apiFetch<{ url: string }>("/api/stripe/connect", {
     method: "POST",
     headers: authHeaders(accessToken),
+  });
+  return url;
+}
+
+// Platform subscription ($30/mo -> 300 credits) — separate from the Connect
+// account above, which is for the shop receiving customer payments.
+export async function startSubscriptionCheckout(accessToken: string): Promise<string> {
+  const { url } = await apiFetch<{ url: string }>("/api/stripe/subscribe", {
+    method: "POST",
+    headers: authHeaders(accessToken),
+  });
+  return url;
+}
+
+export async function startBillingPortal(accessToken: string): Promise<string> {
+  const { url } = await apiFetch<{ url: string }>("/api/stripe/portal", {
+    method: "POST",
+    headers: authHeaders(accessToken),
+  });
+  return url;
+}
+
+export async function startCreditPurchase(
+  accessToken: string,
+  selection: { pack: "small" | "medium" | "large" } | { customCredits: number }
+): Promise<string> {
+  const body = "pack" in selection ? { pack: selection.pack } : { custom_credits: selection.customCredits };
+  const { url } = await apiFetch<{ url: string }>("/api/stripe/buy-credits", {
+    method: "POST",
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(body),
   });
   return url;
 }
@@ -657,6 +687,18 @@ export async function addPortfolioVideo(
   return item;
 }
 
+export async function generatePortfolioDescription(
+  accessToken: string,
+  input: { title?: string; materials?: string; category_name?: string }
+): Promise<string> {
+  const { description } = await apiFetch<{ description: string }>("/api/portfolio/generate-description", {
+    method: "POST",
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(input),
+  });
+  return description;
+}
+
 export async function updatePortfolioItem(
   accessToken: string,
   id: string,
@@ -670,124 +712,44 @@ export async function updatePortfolioItem(
   return item;
 }
 
+export async function exportPortfolioVideo(
+  accessToken: string,
+  id: string,
+  platform: "tiktok" | "twitter" | "reels"
+): Promise<string> {
+  const { video_url } = await apiFetch<{ platform: string; video_url: string }>(
+    `/api/portfolio/${id}/export-video`,
+    {
+      method: "POST",
+      headers: authHeaders(accessToken),
+      body: JSON.stringify({ platform }),
+    }
+  );
+  return video_url;
+}
+
+export interface SocialCaptionResult {
+  caption: string;
+  hashtags: string[];
+}
+
+export async function generateSocialCaption(
+  accessToken: string,
+  id: string,
+  platform: "tiktok" | "twitter" | "reels"
+): Promise<SocialCaptionResult> {
+  return apiFetch<SocialCaptionResult>(`/api/portfolio/${id}/social-caption`, {
+    method: "POST",
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({ platform }),
+  });
+}
+
 export async function deletePortfolioItem(accessToken: string, id: string): Promise<void> {
   await apiFetch<{ ok: true }>(`/api/portfolio/${id}`, {
     method: "DELETE",
     headers: authHeaders(accessToken),
   });
-}
-
-// =========================================================
-// Feed engagement: like / save / comment / boost
-// =========================================================
-
-export async function likePortfolioItem(accessToken: string, id: string): Promise<void> {
-  await apiFetch<{ ok: true }>(`/api/portfolio/${id}/like`, {
-    method: "POST",
-    headers: authHeaders(accessToken),
-  });
-}
-
-export async function unlikePortfolioItem(accessToken: string, id: string): Promise<void> {
-  await apiFetch<{ ok: true }>(`/api/portfolio/${id}/like`, {
-    method: "DELETE",
-    headers: authHeaders(accessToken),
-  });
-}
-
-export async function savePortfolioItem(accessToken: string, id: string): Promise<void> {
-  await apiFetch<{ ok: true }>(`/api/portfolio/${id}/save`, {
-    method: "POST",
-    headers: authHeaders(accessToken),
-  });
-}
-
-export async function unsavePortfolioItem(accessToken: string, id: string): Promise<void> {
-  await apiFetch<{ ok: true }>(`/api/portfolio/${id}/save`, {
-    method: "DELETE",
-    headers: authHeaders(accessToken),
-  });
-}
-
-export interface PortfolioComment {
-  id: string;
-  customer_id: string;
-  body: string;
-  created_at: string;
-  customers: { display_name: string; avatar_url: string | null } | null;
-}
-
-export async function fetchPortfolioComments(id: string): Promise<PortfolioComment[]> {
-  const { comments } = await apiFetch<{ comments: PortfolioComment[] }>(`/api/portfolio/${id}/comments`, {});
-  return comments;
-}
-
-export async function postPortfolioComment(
-  accessToken: string,
-  id: string,
-  body: string
-): Promise<PortfolioComment> {
-  const { comment } = await apiFetch<{ comment: PortfolioComment }>(`/api/portfolio/${id}/comments`, {
-    method: "POST",
-    headers: authHeaders(accessToken),
-    body: JSON.stringify({ body }),
-  });
-  return comment;
-}
-
-export async function deletePortfolioComment(accessToken: string, portfolioItemId: string, commentId: string): Promise<void> {
-  await apiFetch<{ ok: true }>(`/api/portfolio/${portfolioItemId}/comments/${commentId}`, {
-    method: "DELETE",
-    headers: authHeaders(accessToken),
-  });
-}
-
-export async function boostPortfolioItem(accessToken: string, id: string): Promise<{ boost_expires_at: string }> {
-  return apiFetch<{ boost_expires_at: string }>(`/api/portfolio/${id}/boost`, {
-    method: "POST",
-    headers: authHeaders(accessToken),
-  });
-}
-
-export async function unboostPortfolioItem(accessToken: string, id: string): Promise<void> {
-  await apiFetch<{ ok: true }>(`/api/portfolio/${id}/boost`, {
-    method: "DELETE",
-    headers: authHeaders(accessToken),
-  });
-}
-
-// =========================================================
-// Feed
-// =========================================================
-
-export interface FeedItem {
-  id: string;
-  media_type: "image" | "video";
-  image_url: string | null;
-  video_url: string | null;
-  caption: string | null;
-  description: string | null;
-  materials: string | null;
-  created_at: string;
-  boosted: boolean;
-  shop: { id: string; company_name: string; logo_url: string | null; verified: boolean };
-  likes_count: number;
-  saves_count: number;
-  comments_count: number;
-  liked: boolean;
-  saved: boolean;
-}
-
-export async function fetchFeed(
-  mode: "discover" | "following",
-  offset: number,
-  limit: number,
-  accessToken?: string
-): Promise<{ items: FeedItem[]; has_more: boolean }> {
-  return apiFetch<{ items: FeedItem[]; has_more: boolean }>(
-    `/api/feed?mode=${mode}&offset=${offset}&limit=${limit}`,
-    { headers: accessToken ? authHeaders(accessToken) : undefined }
-  );
 }
 
 export async function generateInConversation(

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    { "path": "/api/gold-rate/refresh", "schedule": "0 * * * *" },
+    { "path": "/api/cron/reset-credits", "schedule": "0 0 1 * *" }
+  ]
+}

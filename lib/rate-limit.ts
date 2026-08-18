@@ -84,3 +84,31 @@ export async function checkGenerationRateLimit(
     );
   }
 }
+
+// Staff-facing generation (Simulator, Portfolio video) has no per-conversation
+// context to key a limit off of, and no UI "please wait" affordance — just a
+// minimum cooldown between a tenant's own generations, enough to stop a
+// scripted loop without ever bothering a person clicking the button by hand.
+// DB-backed (not in-memory) so it holds up across serverless instances.
+const STAFF_GENERATION_COOLDOWN_SECONDS = 2;
+
+export async function checkTenantGenerationCooldown(
+  supabase: SupabaseClient,
+  tenantId: string,
+  table: "designs" | "portfolio_items"
+): Promise<void> {
+  const { data: last } = await supabase
+    .from(table)
+    .select("created_at")
+    .eq("tenant_id", tenantId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!last) return;
+
+  const secondsSince = (Date.now() - new Date(last.created_at).getTime()) / 1000;
+  if (secondsSince < STAFF_GENERATION_COOLDOWN_SECONDS) {
+    throw Errors.rateLimited("Please wait a moment before generating again.");
+  }
+}

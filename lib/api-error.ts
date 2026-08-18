@@ -42,6 +42,7 @@ export const Errors = {
       `You've used all ${max} design tries for this request. Ask the shop for more, or try the advisor's suggestions.`,
       "revision_limit_reached"
     ),
+  subscriptionRequired: (message: string) => new AppError(403, message, "subscription_required"),
 };
 
 export function withErrorHandling<T extends unknown[]>(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   generateInConversation,
   fetchRevisionStatus,
@@ -11,6 +11,7 @@ import {
 } from "@/lib/api-client";
 import type { Category, Material } from "@/types/domain";
 import { useToast } from "@/components/ui/Toast";
+import { FileDropzone } from "@/components/ui/FileDropzone";
 
 interface GeneratePanelProps {
   accessToken: string;
@@ -43,7 +44,8 @@ function AdvisorPanel({
   const toast = useToast();
   const [advice, setAdvice] = useState<string | null>(null);
   const [loadingAdvice, setLoadingAdvice] = useState(true);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [referenceFile, setReferenceFile] = useState<File | null>(null);
+  const [uploadKey, setUploadKey] = useState(0);
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -55,8 +57,7 @@ function AdvisorPanel({
   }, [accessToken, conversationId]);
 
   async function handleGenerateFromReference() {
-    const file = fileInputRef.current?.files?.[0];
-    if (!file) {
+    if (!referenceFile) {
       toast.push("Choose a reference photo first.");
       return;
     }
@@ -67,7 +68,7 @@ function AdvisorPanel({
     setSubmitting(true);
     try {
       await generateFromReference(accessToken, conversationId, {
-        image: file,
+        image: referenceFile,
         note: note.trim() || undefined,
         category_id: categoryId,
         metal_material_id: metalId,
@@ -75,6 +76,8 @@ function AdvisorPanel({
         finish_material_id: finishId,
         estimated_weight_grams: weightGrams,
       });
+      setReferenceFile(null);
+      setUploadKey((k) => k + 1);
       onGenerated();
     } catch (err) {
       toast.push(err instanceof Error ? err.message : "Could not generate from that reference.");
@@ -94,7 +97,14 @@ function AdvisorPanel({
 
       <div>
         <p className="text-xs text-stone">Or upload a reference photo — we&apos;ll generate a design guided by it:</p>
-        <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="mt-1.5 text-sm" />
+        <div className="mt-1.5">
+          <FileDropzone
+            key={uploadKey}
+            accept="image/jpeg,image/png,image/webp"
+            kind="photo"
+            onFileSelected={setReferenceFile}
+          />
+        </div>
         <input
           value={note}
           onChange={(e) => setNote(e.target.value)}

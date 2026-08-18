@@ -8,6 +8,7 @@ const SHOP_PROTECTED_PREFIXES = [
   "/messages",
   "/portfolio",
   "/settings",
+  "/help",
 ];
 const CUSTOMER_PROTECTED_PREFIXES = ["/customer/messages"];
 
@@ -20,10 +21,27 @@ export async function middleware(req: NextRequest) {
     {
       cookies: {
         get: (name: string) => req.cookies.get(name)?.value,
+        // Force `secure` in production regardless of what Supabase passes,
+        // and pin `sameSite: "lax"` explicitly (CSRF baseline) rather than
+        // relying on the library's default. Deliberately NOT httpOnly — the
+        // browser Supabase client (lib/supabase-browser.ts) reads this same
+        // cookie client-side to manage the session.
         set: (name: string, value: string, options: CookieOptions) =>
-          res.cookies.set({ name, value, ...options }),
+          res.cookies.set({
+            ...options,
+            name,
+            value,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: options.sameSite ?? "lax",
+          }),
         remove: (name: string, options: CookieOptions) =>
-          res.cookies.set({ name, value: "", ...options }),
+          res.cookies.set({
+            ...options,
+            name,
+            value: "",
+            secure: process.env.NODE_ENV === "production",
+            sameSite: options.sameSite ?? "lax",
+          }),
       },
     }
   );
@@ -37,6 +55,13 @@ export async function middleware(req: NextRequest) {
   const isCustomerProtected = CUSTOMER_PROTECTED_PREFIXES.some((p) => path.startsWith(p));
   const isShopLoginPage = path === "/login";
   const isCustomerLoginPage = path === "/customer/login";
+  const isHomePage = path === "/";
+
+  // A signed-in shop landing on the marketing page should go straight back
+  // into the app rather than seeing "Start free" again.
+  if (isHomePage && session) {
+    return NextResponse.redirect(new URL("/simulator", req.url));
+  }
 
   if (isShopProtected && !session) {
     const redirectUrl = new URL("/login", req.url);
@@ -63,12 +88,14 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    "/",
     "/simulator/:path*",
     "/materials/:path*",
     "/history/:path*",
     "/messages/:path*",
     "/portfolio/:path*",
     "/settings/:path*",
+    "/help/:path*",
     "/login",
     "/customer/messages/:path*",
     "/customer/login",

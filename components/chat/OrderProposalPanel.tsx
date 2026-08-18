@@ -88,7 +88,7 @@ export function OrderProposalPanel({
           <option value="">No specific design</option>
           {designOptions.map((d) => (
             <option key={d.design_id} value={d.design_id}>
-              Design — ${d.price_usd.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              Design · est. ${d.price_usd.toLocaleString("en-US", { minimumFractionDigits: 2 })}
             </option>
           ))}
         </select>
