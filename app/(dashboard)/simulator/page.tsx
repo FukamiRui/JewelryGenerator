@@ -274,8 +274,8 @@ export default function SimulatorPage() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden">
-      <div className="flex flex-1 overflow-hidden">
+    <div className="flex h-full w-full flex-col overflow-y-auto lg:overflow-hidden">
+      <div className="flex flex-1 flex-col lg:flex-row lg:overflow-hidden">
         <SelectionRail
           categories={categories}
           metals={metals}
@@ -307,7 +307,7 @@ export default function SimulatorPage() {
           creditsLimit={tenant?.monthly_credit_limit ?? 0}
           isSubscribed={isSubscribed}
         />
-        <main className="flex flex-1 bg-pearl">
+        <main className="flex min-h-[70vh] flex-1 bg-pearl lg:min-h-0">
           <ResultCanvas
             generating={generating}
             result={result}

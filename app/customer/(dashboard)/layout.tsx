@@ -13,8 +13,8 @@ const NAV_ITEMS = [{ href: "/customer/messages", label: "Messages" }];
 function Navbar({ customer, onSignOut }: { customer: Customer; onSignOut: () => void }) {
   const pathname = usePathname();
   return (
-    <nav className="flex items-center justify-between border-b border-line-light bg-white px-6 py-3">
-      <div className="flex items-center gap-8">
+    <nav className="flex flex-wrap items-center justify-between gap-y-2 border-b border-line-light bg-white px-4 py-3 sm:px-6">
+      <div className="flex items-center gap-4 sm:gap-8">
         <span className="font-display text-lg text-ink">Atelier</span>
         <div className="flex gap-1">
           {NAV_ITEMS.map((item) => (
@@ -31,8 +31,10 @@ function Navbar({ customer, onSignOut }: { customer: Customer; onSignOut: () => 
         </div>
       </div>
       <div className="flex items-center gap-4">
-        <span className="font-mono text-xs text-stone">{customer.display_name}</span>
-        <button onClick={onSignOut} className="text-xs text-stone hover:text-ink">
+        <span className="max-w-[40vw] truncate font-mono text-xs text-stone sm:max-w-none">
+          {customer.display_name}
+        </span>
+        <button onClick={onSignOut} className="shrink-0 text-xs text-stone hover:text-ink">
           Sign out
         </button>
       </div>

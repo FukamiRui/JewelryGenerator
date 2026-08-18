@@ -93,7 +93,7 @@ export function SelectionRail(props: SelectionRailProps) {
   }
 
   return (
-    <aside className="flex h-full w-[340px] shrink-0 flex-col bg-ink px-6 text-pearl">
+    <aside className="flex h-auto w-full shrink-0 flex-col bg-ink px-6 text-pearl lg:h-full lg:w-[340px]">
       <div className="pt-8 pb-4">
         <p className="font-display text-lg tracking-wide">Atelier Simulator</p>
         <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-stone">

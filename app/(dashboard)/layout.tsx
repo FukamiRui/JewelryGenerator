@@ -33,18 +33,74 @@ function Navbar({
   onOpenTutorial: () => void;
 }) {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
   const remaining = tenant ? tenant.monthly_credit_limit - tenant.credits_used_this_month : null;
 
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
   return (
-    <nav className="flex items-center justify-between border-b border-line-light bg-white px-6 py-3">
-      <div className="flex items-center gap-8">
-        <span className="font-display text-lg text-ink">Atelier</span>
-        <div className="flex gap-1">
+    <nav className="border-b border-line-light bg-white">
+      <div className="flex items-center justify-between px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-8">
+          <span className="font-display text-lg text-ink">Atelier</span>
+          <div className="hidden gap-1 lg:flex">
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`rounded-sm px-3 py-1.5 text-sm transition-colors ${
+                  pathname.startsWith(item.href)
+                    ? "bg-ink text-pearl"
+                    : "text-stone hover:bg-pearl hover:text-ink"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+        <div className="hidden items-center gap-4 lg:flex">
+          {tenant && (
+            <span className="font-mono text-xs text-stone">
+              {tenant.company_name} · {remaining} / {tenant.monthly_credit_limit} credits left
+            </span>
+          )}
+          <button
+            onClick={onOpenTutorial}
+            className="rounded-full border border-line-light px-3 py-1 text-xs text-stone transition-colors hover:border-gold hover:text-ink"
+          >
+            How this works
+          </button>
+          <button onClick={onSignOut} className="text-xs text-stone hover:text-ink">
+            Sign out
+          </button>
+        </div>
+        <button
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-label="Toggle menu"
+          aria-expanded={menuOpen}
+          className="flex h-9 w-9 items-center justify-center rounded-sm text-ink lg:hidden"
+        >
+          {menuOpen ? (
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M1 1L17 17M17 1L1 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+              <path d="M0 1H18M0 7H18M0 13H18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          )}
+        </button>
+      </div>
+      {menuOpen && (
+        <div className="flex flex-col gap-1 border-t border-line-light px-4 py-3 lg:hidden">
           {NAV_ITEMS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`rounded-sm px-3 py-1.5 text-sm transition-colors ${
+              className={`rounded-sm px-3 py-2 text-sm transition-colors ${
                 pathname.startsWith(item.href)
                   ? "bg-ink text-pearl"
                   : "text-stone hover:bg-pearl hover:text-ink"
@@ -53,24 +109,24 @@ function Navbar({
               {item.label}
             </Link>
           ))}
+          <div className="mt-2 flex flex-col gap-2 border-t border-line-light pt-3">
+            {tenant && (
+              <span className="font-mono text-xs text-stone">
+                {tenant.company_name} · {remaining} / {tenant.monthly_credit_limit} credits left
+              </span>
+            )}
+            <button
+              onClick={onOpenTutorial}
+              className="self-start rounded-full border border-line-light px-3 py-1 text-xs text-stone transition-colors hover:border-gold hover:text-ink"
+            >
+              How this works
+            </button>
+            <button onClick={onSignOut} className="self-start text-xs text-stone hover:text-ink">
+              Sign out
+            </button>
+          </div>
         </div>
-      </div>
-      <div className="flex items-center gap-4">
-        {tenant && (
-          <span className="font-mono text-xs text-stone">
-            {tenant.company_name} · {remaining} / {tenant.monthly_credit_limit} credits left
-          </span>
-        )}
-        <button
-          onClick={onOpenTutorial}
-          className="rounded-full border border-line-light px-3 py-1 text-xs text-stone transition-colors hover:border-gold hover:text-ink"
-        >
-          How this works
-        </button>
-        <button onClick={onSignOut} className="text-xs text-stone hover:text-ink">
-          Sign out
-        </button>
-      </div>
+      )}
     </nav>
   );
 }
