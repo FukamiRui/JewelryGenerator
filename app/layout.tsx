@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const mono = IBM_Plex_Mono({ weight: ["400", "500"], subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: "Atelier — Jewelry Design Simulator",
+  title: "Atelier: Jewelry Design Simulator",
   description: "AI-assisted jewelry design and estimate tool for jewelry stores.",
 };
 

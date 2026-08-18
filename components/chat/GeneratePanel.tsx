@@ -96,7 +96,7 @@ function AdvisorPanel({
       </div>
 
       <div>
-        <p className="text-xs text-stone">Or upload a reference photo — we&apos;ll generate a design guided by it:</p>
+        <p className="text-xs text-stone">Or upload a reference photo, we&apos;ll generate a design guided by it:</p>
         <div className="mt-1.5">
           <FileDropzone
             key={uploadKey}

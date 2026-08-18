@@ -166,7 +166,7 @@ export function OrderCard({
       {returnsAccepted !== undefined && (
         <p className="mt-1 text-[11px] text-stone">
           <span className={returnsAccepted ? "text-ink" : ""}>
-            {returnsAccepted ? "✓ Returns accepted" : "✕ Final sale — no returns"}
+            {returnsAccepted ? "✓ Returns accepted" : "✕ Final sale, no returns"}
           </span>
           {returnsAccepted && returnPolicyNote && ` · ${returnPolicyNote}`}
         </p>

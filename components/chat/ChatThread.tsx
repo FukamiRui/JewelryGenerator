@@ -239,7 +239,7 @@ export function ChatThread({
         )}
 
         {!loading && !loadError && messages.length === 0 && (
-          <p className="text-sm text-stone">No messages yet — say hello.</p>
+          <p className="text-sm text-stone">No messages yet. Say hello.</p>
         )}
 
         {!loading && !loadError && (

@@ -197,7 +197,7 @@ export function SelectionRail(props: SelectionRailProps) {
                 className="w-full rounded-sm border border-line-dark bg-transparent px-3 py-1.5 text-sm text-pearl placeholder:text-stone/70 focus:border-gold"
               />
               <InfoTooltip label="Why mention tools/technique">
-                Naming how the piece is actually made — hand-forged, cast, CNC-milled, hand-set stones —
+                Naming how the piece is actually made (hand-forged, cast, CNC-milled, hand-set stones)
                 helps the AI render match your real process, and gives customers a reason beyond price to
                 choose you.
               </InfoTooltip>
@@ -265,7 +265,7 @@ export function SelectionRail(props: SelectionRailProps) {
             <UpgradeGate
               variant="dark"
               title="Reference photos are a subscriber feature"
-              message="Upload a photo and guide the render toward it — available on the subscription plan."
+              message="Upload a photo and guide the render toward it, available on the subscription plan."
             />
           ) : (
             <>
@@ -274,7 +274,7 @@ export function SelectionRail(props: SelectionRailProps) {
                   Customer showing you a photo in person? Upload it and generate a design guided by it.
                 </p>
                 <InfoTooltip label="How reference photos work">
-                  The photo isn&apos;t copied — it guides an AI render toward that style/shape, combined with the
+                  The photo isn&apos;t copied. It guides an AI render toward that style/shape, combined with the
                   item, metal, and stones you&apos;ve picked above.
                 </InfoTooltip>
               </div>
@@ -332,12 +332,12 @@ export function SelectionRail(props: SelectionRailProps) {
         </button>
         {creditsRemaining <= 0 ? (
           <p className="mt-2 font-mono text-[10px] text-gold">
-            Monthly credit limit reached — contact your admin to add more.
+            Monthly credit limit reached. Contact your admin to add more.
           </p>
         ) : (
           lowCredits && (
             <p className="mt-2 font-mono text-[10px] text-gold">
-              Running low on credits — consider adding more.
+              Running low on credits. Consider adding more.
             </p>
           )
         )}

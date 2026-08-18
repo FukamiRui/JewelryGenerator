@@ -25,7 +25,7 @@ export function UpgradeGate({ title, message, variant = "light" }: UpgradeGatePr
         href="/settings"
         className="mt-3 inline-block rounded-full bg-gold px-4 py-1.5 text-xs font-medium uppercase tracking-wide text-ink transition-colors hover:bg-gold-bright"
       >
-        Upgrade — ${SUBSCRIPTION_PRICE_USD}/mo
+        Upgrade: ${SUBSCRIPTION_PRICE_USD}/mo
       </Link>
     </div>
   );

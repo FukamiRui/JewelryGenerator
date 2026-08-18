@@ -6,7 +6,7 @@ import { getBrowserClient } from "@/lib/supabase-browser";
 
 function translateAuthError(message: string): string {
   if (message.includes("Password should be at least")) return "Password must be at least 6 characters.";
-  if (message.includes("rate limit")) return "Too many attempts — please wait a moment and try again.";
+  if (message.includes("rate limit")) return "Too many attempts. Please wait a moment and try again.";
   return message;
 }
 
@@ -102,7 +102,7 @@ function ResetPasswordForm() {
         {status === "done" && (
           <div className="mt-8 flex flex-col gap-3">
             <p className="rounded-sm bg-ink/5 px-3 py-2.5 text-sm text-ink">
-              Password updated — sign in with your new password.
+              Password updated. Sign in with your new password.
             </p>
             <a href={loginPath} className="self-start text-xs text-gold hover:underline">
               Go to sign in

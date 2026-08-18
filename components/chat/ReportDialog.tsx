@@ -24,7 +24,7 @@ export function ReportDialog({
     setSubmitting(true);
     try {
       await submitReport(accessToken, { conversation_id: conversationId, reason, details: details.trim() || undefined });
-      toast.push("Report submitted — our team will take a look.");
+      toast.push("Report submitted. Our team will take a look.");
       onClose();
     } catch (err) {
       toast.push(err instanceof Error ? err.message : "Could not submit your report.");

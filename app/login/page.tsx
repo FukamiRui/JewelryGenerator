@@ -14,13 +14,13 @@ function translateAuthError(message: string): string {
     return "Email or password is incorrect.";
   }
   if (message.includes("User already registered")) {
-    return "An account with this email already exists — try signing in instead.";
+    return "An account with this email already exists. Try signing in instead.";
   }
   if (message.includes("Password should be at least")) {
     return "Password must be at least 6 characters.";
   }
   if (message.includes("rate limit")) {
-    return "Too many attempts — please wait a moment and try again.";
+    return "Too many attempts. Please wait a moment and try again.";
   }
   return message;
 }
@@ -115,7 +115,7 @@ function LoginForm() {
         {mode === "forgot" && resetSent ? (
           <div className="mt-8 flex flex-col gap-3">
             <p className="rounded-sm bg-ink/5 px-3 py-2.5 text-sm text-ink">
-              If an account exists for {email}, a password reset link is on its way — check your email.
+              If an account exists for {email}, a password reset link is on its way. Check your email.
             </p>
             <button
               onClick={() => switchMode("sign_in")}

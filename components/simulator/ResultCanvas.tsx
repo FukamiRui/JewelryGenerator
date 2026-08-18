@@ -24,13 +24,13 @@ const DEMO_STEPS = [
     title: "2. Sketch",
     blurb: "Not quite right? Mark up the render by hand.",
     detail:
-      "Once a design is on the bench, “✎ Sketch & regenerate” opens a drawing layer — draw directly on the image with a mouse, finger, or Apple Pencil to mark what should change.",
+      "Once a design is on the bench, “✎ Sketch & regenerate” opens a drawing layer: draw directly on the image with a mouse, finger, or Apple Pencil to mark what should change.",
   },
   {
     title: "3. Regenerate",
     blurb: "Submit the markup to render a new version guided by it.",
     detail:
-      "The annotated image is flattened and sent through the same engine as reference-photo generation, so your sketch actually shapes the next render — not just a note to yourself.",
+      "The annotated image is flattened and sent through the same engine as reference-photo generation, so your sketch actually shapes the next render, not just a note to yourself.",
   },
 ] as const;
 
@@ -162,7 +162,7 @@ export function ResultCanvas({
                 ✎ Sketch &amp; regenerate
               </button>
               <InfoTooltip label="What sketch & regenerate does">
-                Draw corrections directly on this image, then submit — the markup guides a new render instead of
+                Draw corrections directly on this image, then submit. The markup guides a new render instead of
                 describing the change in words.
               </InfoTooltip>
             </div>
@@ -185,7 +185,7 @@ export function ResultCanvas({
                 {generatingAngles ? "Generating…" : `⊞ 4 angles (${MULTI_ANGLE_CREDIT_COST})`}
               </button>
               <InfoTooltip label="What Generate 4 angles does">
-                Renders this same piece from the front, side, a three-quarter diagonal, and below — a quick
+                Renders this same piece from the front, side, a three-quarter diagonal, and below, a quick
                 pseudo-3D turnaround without a full 3D model.
               </InfoTooltip>
             </div>

@@ -163,7 +163,7 @@ function CategoriesSection({ accessToken }: { accessToken: string }) {
 
       {!loading && !loadError && categories.length === 0 && (
         <p className="mt-6 text-sm text-stone">
-          No categories yet — add your first item type above (e.g. "Ring").
+          No categories yet. Add your first item type above (e.g. "Ring").
         </p>
       )}
 
@@ -183,7 +183,7 @@ function CategoriesSection({ accessToken }: { accessToken: string }) {
                 <td className="py-2">{c.name}</td>
                 <td className="max-w-xs truncate py-2 text-stone">{c.ai_prompt_tag}</td>
                 <td className="py-2 font-mono">
-                  {c.base_processing_cost ? `$${c.base_processing_cost}` : "—"}
+                  {c.base_processing_cost ? `$${c.base_processing_cost}` : "-"}
                 </td>
                 <td className="py-2 text-right">
                   <button
@@ -281,7 +281,7 @@ function MaterialsSection({ accessToken }: { accessToken: string }) {
       <h1 className="font-display text-2xl text-ink">Materials</h1>
       <p className="mt-1 text-sm text-stone">
         Add the metals, gemstones, and finishes your store offers. The AI tag is what gets
-        sent to the image generator, so keep it descriptive and in English. Cost is optional —
+        sent to the image generator, so keep it descriptive and in English. Cost is optional:
         metals without a cost fall back to the live spot rate.
       </p>
 
@@ -358,7 +358,7 @@ function MaterialsSection({ accessToken }: { accessToken: string }) {
 
       {!loading && !loadError && materials.length === 0 && (
         <p className="mt-6 text-sm text-stone">
-          No materials yet — add your first metal above to get started.
+          No materials yet. Add your first metal above to get started.
         </p>
       )}
 
@@ -381,7 +381,7 @@ function MaterialsSection({ accessToken }: { accessToken: string }) {
                 <td className="py-2">{m.name}</td>
                 <td className="max-w-xs truncate py-2 text-stone">{m.ai_prompt_tag}</td>
                 <td className="py-2 font-mono">
-                  {m.cost_per_gram_or_carat ? `$${m.cost_per_gram_or_carat}` : "—"}
+                  {m.cost_per_gram_or_carat ? `$${m.cost_per_gram_or_carat}` : "-"}
                 </td>
                 <td className="py-2 font-mono">×{m.price_markup_ratio}</td>
                 <td className="py-2 text-right">

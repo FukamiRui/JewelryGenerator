@@ -8,7 +8,7 @@ import {
 const STEPS = [
   {
     title: "Pick your piece",
-    body: "Choose an item, metal, and stones — or guide it with a photo a customer showed you.",
+    body: "Choose an item, metal, and stones, or guide it with a photo a customer showed you.",
   },
   {
     title: "Generate",
@@ -39,11 +39,11 @@ export default function HomePage() {
           For jewelry stores
         </p>
         <h1 className="mt-4 font-display text-4xl leading-tight text-ink sm:text-5xl">
-          From a rough idea to a sellable estimate — in minutes.
+          From a rough idea to a sellable estimate in minutes.
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-stone">
           AI-assisted jewelry design, sketch-and-regenerate refinement, and ready-to-post social
-          content — a design workbench built for the counter, not a customer-facing app.
+          content: a design workbench built for the counter, not a customer-facing app.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
@@ -92,10 +92,10 @@ export default function HomePage() {
               <p className="mt-1 text-sm text-stone">Try it with no commitment.</p>
               <p className="mt-4 font-display text-3xl text-ink">$0</p>
               <ul className="mt-4 flex flex-col gap-2 text-sm text-stone">
-                <li>— {FREE_PLAN_MONTHLY_CREDITS} design credits/month</li>
-                <li>— Generated images are watermarked</li>
-                <li>— 1 portfolio piece</li>
-                <li>— No reference-photo, sketch, or video generation</li>
+                <li>• {FREE_PLAN_MONTHLY_CREDITS} design credits/month</li>
+                <li>• Generated images are watermarked</li>
+                <li>• 1 portfolio piece</li>
+                <li>• No reference-photo, sketch, or video generation</li>
               </ul>
             </div>
             <div className="rounded-sm border border-gold bg-white p-6 shadow-[0_20px_50px_-20px_rgba(184,147,95,0.4)]">
@@ -106,15 +106,15 @@ export default function HomePage() {
                 <span className="text-base text-stone">/month</span>
               </p>
               <ul className="mt-4 flex flex-col gap-2 text-sm text-stone">
-                <li>— {SUBSCRIPTION_MONTHLY_CREDITS} design credits/month, no watermark</li>
-                <li>— Unlimited portfolio</li>
-                <li>— Reference-photo &amp; sketch-and-regenerate generation</li>
-                <li>— Video generation for social</li>
+                <li>• {SUBSCRIPTION_MONTHLY_CREDITS} design credits/month, no watermark</li>
+                <li>• Unlimited portfolio</li>
+                <li>• Reference-photo &amp; sketch-and-regenerate generation</li>
+                <li>• Video generation for social</li>
               </ul>
             </div>
           </div>
           <p className="mt-6 text-center text-sm text-stone">
-            Need a few more credits mid-month? Top up any time — no subscription required.
+            Need a few more credits mid-month? Top up any time, no subscription required.
           </p>
         </div>
       </section>

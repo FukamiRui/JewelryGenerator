@@ -38,7 +38,7 @@ export default async function SharePage({ params }: { params: { token: string } 
           ${Number(design.price_usd).toLocaleString("en-US", { minimumFractionDigits: 2 })}
         </p>
         <p className="mt-3 text-xs text-stone">
-          Preliminary estimate — please confirm final pricing with the store.
+          Preliminary estimate. Please confirm final pricing with the store.
         </p>
       </div>
     </div>

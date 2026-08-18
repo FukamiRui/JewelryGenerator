@@ -46,7 +46,7 @@ function ReportProblemForm() {
       `Page: ${typeof window !== "undefined" ? window.location.href : ""}`,
     ];
     const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
-      subject.trim() || "Atelier — issue report"
+      subject.trim() || "Atelier: issue report"
     )}&body=${encodeURIComponent(bodyLines.join("\n"))}`;
     window.location.href = mailto;
   }
@@ -76,7 +76,7 @@ function ReportProblemForm() {
       </button>
       <p className="text-xs text-stone">
         Opens your email client addressed to {SUPPORT_EMAIL}, with your shop name and current
-        page attached — nothing is sent from here directly.
+        page attached. Nothing is sent from here directly.
       </p>
     </div>
   );
@@ -111,7 +111,7 @@ export default function HelpPage() {
             <strong className="text-ink">From your picks</strong> renders straight from the item,
             metal, stones, and finish you&apos;ve selected.{" "}
             <strong className="text-ink">From a photo</strong> guides the render toward a
-            reference image instead — useful when a customer shows you something in person.
+            reference image instead, useful when a customer shows you something in person.
           </p>
           <p>
             <strong className="text-ink">✎ Sketch &amp; regenerate</strong> lets you draw directly
@@ -123,7 +123,7 @@ export default function HelpPage() {
             dimensions, tools/technique) are folded into the AI prompt, so mentioning them
             actually shapes the render instead of just being a note. The{" "}
             <strong className="text-ink">Pricing</strong> section lets you type an exact material
-            cost and desired profit instead of the automatic spot-rate estimate — leave both
+            cost and desired profit instead of the automatic spot-rate estimate. Leave both
             blank to keep the automatic calculation.
           </p>
         </Section>
@@ -131,7 +131,7 @@ export default function HelpPage() {
         <Section index="03" title="Generate 4 angles">
           <p>
             Renders front, side, diagonal, and bottom views of an existing design for{" "}
-            {MULTI_ANGLE_CREDIT_COST} credits total (not per image) — a quick pseudo-3D
+            {MULTI_ANGLE_CREDIT_COST} credits total (not per image), a quick pseudo-3D
             turnaround, not a true 3D model. The 4 images stay grouped together wherever they
             show up (the result panel, History).
           </p>
@@ -140,22 +140,22 @@ export default function HelpPage() {
         <Section index="04" title="Portfolio vs. For SNS">
           <p>
             <strong className="text-ink">Portfolio</strong> is what&apos;s shown on your public
-            shop page — upload a photo, pull one from your design history, or generate/upload a
+            shop page: upload a photo, pull one from your design history, or generate/upload a
             video.
           </p>
           <p>
             <strong className="text-ink">For SNS</strong> is a separate prep tool: pick any
             existing piece and get a platform-sized video export plus an AI-drafted caption and
-            hashtags for TikTok, Reels, or X. Nothing publishes automatically — everything is
+            hashtags for TikTok, Reels, or X. Nothing publishes automatically. Everything is
             downloaded or copied so you post it yourself.
           </p>
         </Section>
 
         <Section index="05" title="Pricing & credits">
           <p>
-            <strong className="text-ink">Free</strong> — {FREE_PLAN_MONTHLY_CREDITS} credits/month,
+            <strong className="text-ink">Free</strong>: {FREE_PLAN_MONTHLY_CREDITS} credits/month,
             watermarked images, 1 portfolio piece, and no reference-photo, sketch, or video
-            generation. <strong className="text-ink">Subscribed</strong> — ${SUBSCRIPTION_PRICE_USD}
+            generation. <strong className="text-ink">Subscribed</strong>: ${SUBSCRIPTION_PRICE_USD}
             /month for {SUBSCRIPTION_MONTHLY_CREDITS} credits/month with no watermark, an
             unlimited portfolio, reference-photo &amp; sketch generation, and video.
           </p>
@@ -179,7 +179,7 @@ export default function HelpPage() {
         <Section index="07" title="Messaging customers">
           <p>
             Chat keeps contact details (phone, email, off-platform handles) filtered out of
-            messages on purpose — orders, payments, and support only work when the conversation
+            messages on purpose: orders, payments, and support only work when the conversation
             stays in Atelier. Settings lets you cap how many free re-generations a customer gets
             per request and grant more from within a specific conversation when needed.
           </p>
@@ -187,7 +187,7 @@ export default function HelpPage() {
 
         <Section index="08" title="Your public shop page">
           <p>
-            Reached only via a direct link you share (a bio link, a QR code) — not a browsable
+            Reached only via a direct link you share (a bio link, a QR code), not a browsable
             directory. Settings → Shop profile controls what shows there: cover photo, logo,
             location, specialty materials, years in the craft, an optional contact email, and
             your returns policy.
@@ -196,15 +196,15 @@ export default function HelpPage() {
 
         <Section index="09" title="Troubleshooting">
           <p>
-            <strong className="text-ink">&quot;Spot price cache&quot; unavailable</strong> — live
+            <strong className="text-ink">&quot;Spot price cache&quot; unavailable</strong>: live
             metal rates refresh hourly; this clears itself, or use manual pricing in the meantime.
           </p>
           <p>
-            <strong className="text-ink">&quot;Monthly credit limit reached&quot;</strong> — buy
+            <strong className="text-ink">&quot;Monthly credit limit reached&quot;</strong>: buy
             extra credits or upgrade in Settings.
           </p>
           <p>
-            <strong className="text-ink">&quot;Requires an active subscription&quot;</strong> —
+            <strong className="text-ink">&quot;Requires an active subscription&quot;</strong>:
             reference photos, sketch-and-regenerate, and video are subscriber-only features,
             regardless of credit balance; the free plan is a limited taste of the product, not a
             smaller version of every feature.

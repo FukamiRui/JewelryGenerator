@@ -60,7 +60,7 @@ export default function CustomerMessagesPage() {
 
       {!loading && !error && conversations.length === 0 && (
         <p className="mt-8 text-sm text-stone">
-          No conversations yet — ask the shop you're working with for their link to get started.
+          No conversations yet. Ask the shop you're working with for their link to get started.
         </p>
       )}
 

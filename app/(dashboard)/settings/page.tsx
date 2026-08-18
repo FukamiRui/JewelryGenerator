@@ -123,16 +123,16 @@ function SubscriptionSection() {
         <>
           <p className="mt-2 text-sm text-stone">
             {isPastDue
-              ? "Your last payment failed — update your card to keep full access."
+              ? "Your last payment failed. Update your card to keep full access."
               : `Free plan · ${FREE_PLAN_MONTHLY_CREDITS} credits/month, generated images are watermarked.`}
           </p>
           <ul className="mt-2.5 flex flex-col gap-1 text-xs text-stone">
-            <li>— Portfolio limited to 1 piece</li>
-            <li>— No reference-photo or sketch-and-regenerate generation</li>
-            <li>— No video generation</li>
+            <li>• Portfolio limited to 1 piece</li>
+            <li>• No reference-photo or sketch-and-regenerate generation</li>
+            <li>• No video generation</li>
           </ul>
           <p className="mt-3 text-sm text-stone">
-            Subscribing isn&apos;t just more credits — ${SUBSCRIPTION_PRICE_USD}/month unlocks{" "}
+            Subscribing isn&apos;t just more credits: ${SUBSCRIPTION_PRICE_USD}/month unlocks{" "}
             {SUBSCRIPTION_MONTHLY_CREDITS} credits/month with no watermark, an unlimited portfolio,
             reference-photo &amp; sketch generation, and video.
           </p>
@@ -149,7 +149,7 @@ function SubscriptionSection() {
       <div className="mt-6 border-t border-line-light pt-5">
         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone">Run out mid-month?</p>
         <p className="mt-1.5 text-sm text-stone">
-          Buy extra credits any time — added on top of your current allowance until the next reset.
+          Buy extra credits any time, added on top of your current allowance until the next reset.
         </p>
 
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -207,7 +207,7 @@ function SubscriptionSection() {
                 ≈ Approximately usable as{" "}
                 <span className="text-ink">{usageBreakdown(customCreditsNumber).designs} designs</span>,{" "}
                 <span className="text-ink">{usageBreakdown(customCreditsNumber).angleSets} four-angle sets</span>, or{" "}
-                <span className="text-ink">{usageBreakdown(customCreditsNumber).videos} videos</span> — mixed and
+                <span className="text-ink">{usageBreakdown(customCreditsNumber).videos} videos</span>, mixed and
                 matched however you like.
               </p>
             )}
@@ -264,10 +264,10 @@ function ShopProfileSection() {
       (position) => {
         setCoords({ lat: position.coords.latitude, lng: position.coords.longitude });
         setLocatingDevice(false);
-        toast.push("Location captured — remember to save.");
+        toast.push("Location captured. Remember to save.");
       },
       () => {
-        toast.push("Could not get your location — check your browser's location permission.");
+        toast.push("Could not get your location. Check your browser's location permission.");
         setLocatingDevice(false);
       },
       { timeout: 10_000 }
@@ -342,7 +342,7 @@ function ShopProfileSection() {
     <section className="rounded-sm border border-line-light bg-white p-6">
       <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone">Shop profile</h2>
       <p className="mt-2 text-sm text-stone">
-        Shown publicly on your shop page — the page a customer sees when you share your link with them.
+        Shown publicly on your shop page, the page a customer sees when you share your link with them.
       </p>
 
       <div className="relative mt-4 h-32 w-full overflow-hidden rounded-sm bg-pearl">
@@ -430,7 +430,7 @@ function ShopProfileSection() {
         className="mt-1 w-full rounded-sm border border-line-light px-2 py-1.5 text-sm"
       />
       <p className="mt-1 text-xs text-stone">
-        Shown on your shop page as a general contact — separate from in-chat messaging. Leave blank to hide it.
+        Shown on your shop page as a general contact, separate from in-chat messaging. Leave blank to hide it.
       </p>
 
       <label className="mt-4 block text-xs uppercase tracking-wide text-stone">Bio</label>
@@ -574,7 +574,7 @@ function DesignRevisionsSection() {
       <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone">Design revisions</h2>
       <p className="mt-2 text-sm text-stone">
         How many times a customer can regenerate a design online before they need your OK for more.
-        Unlimited regeneration either burns credits forever or leaves an unhappy customer stuck — once
+        Unlimited regeneration either burns credits forever or leaves an unhappy customer stuck: once
         they hit the limit, they see design-advisor suggestions and can upload a reference photo instead,
         or you can grant more tries directly from the conversation.
       </p>
@@ -633,17 +633,17 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (searchParams.get("stripe") === "return") {
-      toast.push("Stripe onboarding submitted — this can take a moment to verify.");
+      toast.push("Stripe onboarding submitted. This can take a moment to verify.");
     }
     if (searchParams.get("subscription") === "success") {
-      toast.push("Subscription started — this can take a moment to verify.");
+      toast.push("Subscription started. This can take a moment to verify.");
       refreshTenant();
     }
     if (searchParams.get("subscription") === "cancelled") {
       toast.push("Checkout cancelled.");
     }
     if (searchParams.get("credits") === "success") {
-      toast.push("Credits purchased — this can take a moment to verify.");
+      toast.push("Credits purchased. This can take a moment to verify.");
       refreshTenant();
     }
     if (searchParams.get("credits") === "cancelled") {
@@ -696,9 +696,9 @@ export default function SettingsPage() {
             <div>
               <p className="text-sm text-ink">
                 {status.charges_enabled
-                  ? "✓ Connected — you can accept online payments."
+                  ? "✓ Connected. You can accept online payments."
                   : status.connected
-                    ? "Onboarding started but not finished — Stripe still needs a few details from you."
+                    ? "Onboarding started but not finished. Stripe still needs a few details from you."
                     : "Not connected yet."}
               </p>
             </div>

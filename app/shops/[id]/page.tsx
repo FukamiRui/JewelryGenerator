@@ -171,7 +171,7 @@ function ShopProfileInner() {
               </p>
             )}
             <p className="mt-1 text-xs text-stone">
-              {profile.returns_accepted ? "✓ Returns accepted" : "✕ Final sale — no returns"}
+              {profile.returns_accepted ? "✓ Returns accepted" : "✕ Final sale, no returns"}
               {profile.returns_accepted && profile.return_policy_note && ` · ${profile.return_policy_note}`}
             </p>
             {profile.shop.bio && <p className="mt-3 max-w-lg text-sm text-stone">{profile.shop.bio}</p>}

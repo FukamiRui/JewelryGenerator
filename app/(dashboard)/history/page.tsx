@@ -24,7 +24,7 @@ function DesignThumb({ src, small }: { src: string; small?: boolean }) {
   if (failed) {
     return (
       <div className="flex aspect-square items-center justify-center bg-pearl text-xs text-stone">
-        {small ? "—" : "Image unavailable"}
+        {small ? "-" : "Image unavailable"}
       </div>
     );
   }
@@ -251,7 +251,7 @@ export default function HistoryPage() {
         <p className="mt-10 text-sm text-stone">
           {search
             ? `No designs found for "${search}".`
-            : "No designs yet — generate one from the simulator."}
+            : "No designs yet. Generate one from the simulator."}
         </p>
       )}
 

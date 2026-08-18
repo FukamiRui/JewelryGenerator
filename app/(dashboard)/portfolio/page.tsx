@@ -41,7 +41,7 @@ function UploadForm({
 
   async function handleGenerateDescription() {
     if (!title.trim() && !materials.trim()) {
-      toast.push("Add a title or materials first — the AI writes from those.");
+      toast.push("Add a title or materials first. The AI writes from those.");
       return;
     }
     setGeneratingDescription(true);
@@ -349,7 +349,7 @@ function VideoForm({
           <textarea
             value={motionPrompt}
             onChange={(e) => setMotionPrompt(e.target.value)}
-            placeholder="Describe the motion (optional) — default: slow 360° rotation, studio lighting"
+            placeholder="Describe the motion (optional). Default: slow 360° rotation, studio lighting"
             maxLength={500}
             rows={2}
             className="rounded-sm border border-line-light px-2 py-1.5 text-sm"
@@ -445,10 +445,10 @@ function SocialToolsPanel({ accessToken, item }: { accessToken: string; item: Po
       <div className="flex items-center gap-1.5">
         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone">Post to social</p>
         <InfoTooltip label="Tips for posting this">
-          Export it sized for the platform first — a square or vertical crop reads far better in
+          Export it sized for the platform first, a square or vertical crop reads far better in
           feed than a stretched original. Post a few times a week rather than one big batch, lead
           with your strongest 2–3 seconds since that&apos;s when most viewers decide to keep
-          watching, and keep the AI caption&apos;s materials/style tags — buyers search by stone
+          watching, and keep the AI caption&apos;s materials/style tags. Buyers search by stone
           and metal type as often as by look.
         </InfoTooltip>
       </div>
@@ -533,7 +533,7 @@ function ForSnsPanel({ accessToken, items }: { accessToken: string; items: Portf
   if (items.length === 0) {
     return (
       <p className="mt-6 text-sm text-stone">
-        Nothing to work with yet — switch to the Portfolio tab and add a piece first.
+        Nothing to work with yet. Switch to the Portfolio tab and add a piece first.
       </p>
     );
   }
@@ -590,7 +590,7 @@ function PortfolioTile({
 
   async function handleGenerateDescription() {
     if (!caption.trim() && !materials.trim()) {
-      toast.push("Add a title or materials first — the AI writes from those.");
+      toast.push("Add a title or materials first. The AI writes from those.");
       return;
     }
     setGeneratingDescription(true);
@@ -736,7 +736,7 @@ export default function PortfolioPage() {
       {tab === "portfolio" && (
         <>
           <p className="mt-4 text-sm text-stone">
-            Shown publicly on your shop page — highlight your best work with a photo, title,
+            Shown publicly on your shop page, highlight your best work with a photo, title,
             materials, and story, or pull one straight from your design history.
           </p>
 
@@ -761,7 +761,7 @@ export default function PortfolioPage() {
             ) : (
               <UpgradeGate
                 title="Free plan is limited to 1 portfolio piece"
-                message="You've used your one free slot — subscribe for an unlimited portfolio."
+                message="You've used your one free slot. Subscribe for an unlimited portfolio."
               />
             )}
             <div className="border-t border-line-light pt-4">
@@ -783,7 +783,7 @@ export default function PortfolioPage() {
                 <div className="mt-2">
                   <UpgradeGate
                     title="Video is a subscriber feature"
-                    message="Generate or upload portfolio video — available on the subscription plan."
+                    message="Generate or upload portfolio video, available on the subscription plan."
                   />
                 </div>
               )}
@@ -793,7 +793,7 @@ export default function PortfolioPage() {
           {loading && <p className="mt-8 text-sm text-stone">Loading…</p>}
 
           {!loading && items.length === 0 && (
-            <p className="mt-8 text-sm text-stone">Your portfolio is empty — add a piece above.</p>
+            <p className="mt-8 text-sm text-stone">Your portfolio is empty. Add a piece above.</p>
           )}
 
           {!loading && items.length > 0 && (
@@ -817,7 +817,7 @@ export default function PortfolioPage() {
       {tab === "sns" && (
         <>
           <p className="mt-4 text-sm text-stone">
-            Turn a piece from your Portfolio into ready-to-post content — a platform-sized video
+            Turn a piece from your Portfolio into ready-to-post content: a platform-sized video
             export plus an AI-drafted caption and hashtags. Nothing here is posted for you; it's
             all downloaded/copied so you post it yourself.
           </p>

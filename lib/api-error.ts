@@ -33,7 +33,7 @@ export const Errors = {
   contactInfoBlocked: (reason: string) =>
     new AppError(
       400,
-      `Please keep contact details off Atelier (found ${reason}) — orders, payments, and support only work when everything stays in this chat.`,
+      `Please keep contact details off Atelier (found ${reason}). Orders, payments, and support only work when everything stays in this chat.`,
       "contact_info_blocked"
     ),
   revisionLimitReached: (max: number) =>

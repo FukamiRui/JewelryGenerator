@@ -91,7 +91,7 @@ interface Step {
 const STEPS: Step[] = [
   {
     title: "Pick your piece",
-    body: "Choose an item, metal, and stones from the left rail — everything downstream uses these picks.",
+    body: "Choose an item, metal, and stones from the left rail. Everything downstream uses these picks.",
     render: () => (
       <div className="flex h-24 items-center justify-center text-gold">
         <GemIcon />
@@ -124,7 +124,7 @@ const STEPS: Step[] = [
   },
   {
     title: "Turn it around",
-    body: "Generate all four angles of the same piece — front, side, diagonal, and underneath — a quick pseudo-3D turnaround.",
+    body: "Generate all four angles of the same piece (front, side, diagonal, and underneath): a quick pseudo-3D turnaround.",
     render: () => (
       <div className="flex h-24 items-center justify-center text-gold">
         <TurnIcon />
@@ -142,7 +142,7 @@ const STEPS: Step[] = [
   },
   {
     title: "Post it",
-    body: "Turn a portfolio video into a ready-to-post clip — sized for TikTok, Reels, or Twitter, with an AI-drafted caption and hashtags already attached.",
+    body: "Turn a portfolio video into a ready-to-post clip, sized for TikTok, Reels, or Twitter, with an AI-drafted caption and hashtags already attached.",
     render: () => (
       <div className="flex h-24 items-center justify-center text-gold">
         <PostIcon />

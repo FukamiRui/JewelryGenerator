@@ -16,10 +16,10 @@ reference photo instead if their request seems hard to describe in words. 2-3 se
 no preamble, no markdown.`;
 
 const FALLBACK_TIPS = [
-  "Try a different metal tone next — rose gold, yellow gold, and platinum can change the whole feel of the same setting.",
-  "If the stone looks off, adjust the estimated size and regenerate — small changes in scale read very differently in the render.",
+  "Try a different metal tone next. Rose gold, yellow gold, and platinum can change the whole feel of the same setting.",
+  "If the stone looks off, adjust the estimated size and regenerate. Small changes in scale read very differently in the render.",
   "Simplifying often helps: one main stone and one finish tends to look more intentional than combining several details at once.",
-  "If it's hard to put into words, try uploading a reference photo below — showing what you mean is often faster than describing it.",
+  "If it's hard to put into words, try uploading a reference photo below. Showing what you mean is often faster than describing it.",
 ];
 
 function randomFallback(): string {
