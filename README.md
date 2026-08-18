@@ -64,12 +64,16 @@ why, and **Known simplifications** for what was deliberately cut to get here.
    `customer.subscription.updated`, and `customer.subscription.deleted`. Copy the
    signing secret it prints into `STRIPE_WEBHOOK_SECRET`.
 10. Schedule two cron jobs. `vercel.json` already declares both for **Vercel
-    Cron** (`/api/gold-rate/refresh` hourly, `/api/cron/reset-credits`
+    Cron** (`/api/gold-rate/refresh` daily at 00:00 UTC, `/api/cron/reset-credits`
     monthly on the 1st at 00:00) — Vercel Cron sends `GET` with
     `Authorization: Bearer $CRON_SECRET` automatically once `CRON_SECRET` is
-    set as a project env var, no extra setup needed. Using a different
-    scheduler instead (Supabase Edge Function schedule, cron-job.org, curl)?
-    Both routes also accept `POST` with header `x-cron-secret: <CRON_SECRET>`
+    set as a project env var, no extra setup needed. Gold rates refresh daily
+    rather than hourly because Vercel's **Hobby** plan caps Cron Jobs at
+    once/day — fine for a pricing estimate tool, but if you're on **Pro** (no
+    such cap) and want tighter spot-price freshness, change the schedule to
+    e.g. `"0 * * * *"` for hourly. Using a different scheduler instead
+    (Supabase Edge Function schedule, cron-job.org, curl)? Both routes also
+    accept `POST` with header `x-cron-secret: <CRON_SECRET>`
     — `lib/cron-auth.ts` accepts either convention. Spot prices won't exist
     until `/api/gold-rate/refresh` runs at least once; the simulator shows a
     clear "not available yet" error until then, not a silent $0.
