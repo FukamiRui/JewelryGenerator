@@ -1,24 +1,37 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { AppError, Errors } from "@/lib/api-error";
 
-const SUPABASE_URL = process.env.SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY!;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// Checked lazily (inside each function below), not at module load — a
+// top-level throw here would fail Next.js's build-time page-data
+// collection for every route that imports this module (nearly all of
+// them), even in environments where the vars just aren't visible at build
+// time. Still required at actual request time, same as before.
+function getSupabaseUrl(): string {
+  const url = process.env.SUPABASE_URL;
+  if (!url) throw new Error("Missing SUPABASE_URL — check .env.local");
+  return url;
+}
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error(
-    "Missing Supabase env vars — check SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY in .env.local"
-  );
+function getSupabaseAnonKey(): string {
+  const key = process.env.SUPABASE_ANON_KEY;
+  if (!key) throw new Error("Missing SUPABASE_ANON_KEY — check .env.local");
+  return key;
+}
+
+function getSupabaseServiceRoleKey(): string {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY — check .env.local");
+  return key;
 }
 
 export function getServiceClient(): SupabaseClient {
-  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  return createClient(getSupabaseUrl(), getSupabaseServiceRoleKey(), {
     auth: { persistSession: false },
   });
 }
 
 export function getUserClient(accessToken: string): SupabaseClient {
-  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  return createClient(getSupabaseUrl(), getSupabaseAnonKey(), {
     auth: { persistSession: false },
     global: { headers: { Authorization: `Bearer ${accessToken}` } },
   });

@@ -1,16 +1,16 @@
 import Stripe from "stripe";
 
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY!;
-
-if (!STRIPE_SECRET_KEY) {
-  throw new Error("Missing STRIPE_SECRET_KEY — check .env.local");
-}
-
 let client: Stripe | null = null;
 
+// Checked lazily, not at module load — a top-level throw would fail
+// Next.js's build-time page-data collection for every route that
+// transitively imports this module, even where the var just isn't visible
+// at build time (it's still required at actual request time).
 export function getStripeClient(): Stripe {
   if (!client) {
-    client = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2026-07-29.dahlia" });
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (!secretKey) throw new Error("Missing STRIPE_SECRET_KEY — check .env.local");
+    client = new Stripe(secretKey, { apiVersion: "2026-07-29.dahlia" });
   }
   return client;
 }

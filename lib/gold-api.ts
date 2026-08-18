@@ -1,13 +1,16 @@
 import type { MetalCode } from "@/types/domain";
 
-if (!process.env.GOLD_API_KEY) {
-  throw new Error("Missing GOLD_API_KEY — check .env.local");
-}
-const GOLD_API_KEY = process.env.GOLD_API_KEY;
 const GOLD_API_BASE = "https://www.goldapi.io/api";
 
 // Troy ounce -> gram
 const GRAMS_PER_TROY_OUNCE = 31.1034768;
+
+// Checked lazily, not at module load — see lib/stripe.ts for why.
+function getGoldApiKey(): string {
+  const key = process.env.GOLD_API_KEY;
+  if (!key) throw new Error("Missing GOLD_API_KEY — check .env.local");
+  return key;
+}
 
 interface GoldApiResponse {
   price: number; // USD per troy ounce (goldapi.io default)
@@ -23,7 +26,7 @@ interface GoldApiResponse {
 export async function fetchSpotPriceUsdPerGram(metal: MetalCode): Promise<number> {
   const res = await fetch(`${GOLD_API_BASE}/${metal}/USD`, {
     headers: {
-      "x-access-token": GOLD_API_KEY,
+      "x-access-token": getGoldApiKey(),
       "Content-Type": "application/json",
     },
     cache: "no-store",

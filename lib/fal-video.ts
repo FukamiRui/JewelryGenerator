@@ -1,14 +1,16 @@
-if (!process.env.FAL_API_KEY) {
-  throw new Error("Missing FAL_API_KEY — check .env.local");
-}
-const FAL_API_KEY = process.env.FAL_API_KEY;
-
 // Configurable because fal.ai's video model lineup moves fast (Kling,
 // Seedance, Veo, PixVerse, …) and every image-to-video model on fal shares
 // the same { prompt, image_url } request shape, so swapping models is a
 // one-line env change, not a code change.
 const FAL_VIDEO_ENDPOINT =
   process.env.FAL_VIDEO_MODEL_ENDPOINT ?? "https://fal.run/fal-ai/kling-video/v2.1/standard/image-to-video";
+
+// Checked lazily, not at module load — see lib/stripe.ts for why.
+function getFalApiKey(): string {
+  const key = process.env.FAL_API_KEY;
+  if (!key) throw new Error("Missing FAL_API_KEY — check .env.local");
+  return key;
+}
 
 export { VIDEO_GENERATION_CREDIT_COST } from "@/lib/credits";
 
@@ -29,7 +31,7 @@ export async function generateJewelryVideo(
     res = await fetch(FAL_VIDEO_ENDPOINT, {
       method: "POST",
       headers: {
-        Authorization: `Key ${FAL_API_KEY}`,
+        Authorization: `Key ${getFalApiKey()}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

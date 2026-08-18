@@ -1,9 +1,16 @@
-if (!process.env.FAL_API_KEY) {
-  throw new Error("Missing FAL_API_KEY — check .env.local");
-}
-const FAL_API_KEY = process.env.FAL_API_KEY;
 const FAL_FLUX_PRO_ENDPOINT = "https://fal.run/fal-ai/flux-pro/v1.1";
 const FAL_FLUX_KONTEXT_ENDPOINT = "https://fal.run/fal-ai/flux-pro/kontext";
+
+// Checked lazily (inside request-handling code), not at module load — a
+// top-level throw here would make Next.js's build-time page-data
+// collection fail for every route that transitively imports this module,
+// even in environments where the var just isn't visible at build time
+// (it's still required at actual request time, same as before).
+function getFalApiKey(): string {
+  const key = process.env.FAL_API_KEY;
+  if (!key) throw new Error("Missing FAL_API_KEY — check .env.local");
+  return key;
+}
 
 interface FalFluxResponse {
   images: { url: string; width: number; height: number }[];
@@ -34,7 +41,7 @@ export async function generateJewelryImages(
     res = await fetch(FAL_FLUX_PRO_ENDPOINT, {
       method: "POST",
       headers: {
-        Authorization: `Key ${FAL_API_KEY}`,
+        Authorization: `Key ${getFalApiKey()}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -91,7 +98,7 @@ export async function generateJewelryImageFromReference(
     res = await fetch(FAL_FLUX_KONTEXT_ENDPOINT, {
       method: "POST",
       headers: {
-        Authorization: `Key ${FAL_API_KEY}`,
+        Authorization: `Key ${getFalApiKey()}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

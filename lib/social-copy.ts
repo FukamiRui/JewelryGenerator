@@ -1,8 +1,11 @@
-if (!process.env.GROQ_API_KEY) {
-  throw new Error("Missing GROQ_API_KEY — check .env.local");
-}
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
+
+// Checked lazily, not at module load — see lib/stripe.ts for why.
+function getGroqApiKey(): string {
+  const key = process.env.GROQ_API_KEY;
+  if (!key) throw new Error("Missing GROQ_API_KEY — check .env.local");
+  return key;
+}
 const GROQ_MODEL = "openai/gpt-oss-120b";
 
 export type SocialPlatform = "tiktok" | "twitter" | "reels";
@@ -52,7 +55,7 @@ export async function generateSocialCaption(input: SocialCaptionInput): Promise<
     res = await fetch(GROQ_ENDPOINT, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${GROQ_API_KEY}`,
+        Authorization: `Bearer ${getGroqApiKey()}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

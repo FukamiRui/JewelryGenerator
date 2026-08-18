@@ -628,6 +628,21 @@ for its false-positive/negative tradeoffs.
 
 A pre-launch hardening pass, in the order it's usually asked about:
 
+- **Env-var checks are lazy, not at module load**: `lib/stripe.ts`,
+  `lib/supabase.ts`, `lib/claude-prompt.ts`, `lib/portfolio-copy.ts`,
+  `lib/social-copy.ts`, `lib/flux-image.ts`, `lib/fal-video.ts`, and
+  `lib/gold-api.ts` used to `throw` at the top of the module if their API
+  key env var was missing. That's fine for `next dev`, but Next.js's
+  production build imports every route module to collect page metadata —
+  so on Vercel, if a single env var wasn't visible at *build* time (wrong
+  scope, not-yet-saved, etc.), the **entire build failed**, not just that
+  one route at request time. Hit this for real deploying to Vercel:
+  `Missing STRIPE_SECRET_KEY` failed `next build` outright. Fixed by moving
+  every one of these checks inside the function that actually uses the key
+  (called per-request, never at import time) — verified by stripping
+  `STRIPE_SECRET_KEY` from `.env.local` and re-running `npm run build`,
+  which now succeeds; the check still fires (correctly) the moment a
+  request actually needs that key.
 - **Secrets**: `.env.local` is gitignored; only `.env.example` (empty
   placeholders) is tracked, and there's no secret ever committed to git
   history. `lib/env.ts` fails loudly at boot if a required server var is
