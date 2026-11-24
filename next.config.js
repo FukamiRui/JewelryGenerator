@@ -33,12 +33,25 @@ const SECURITY_HEADERS = [
 ];
 
 /** @type {import('next').NextConfig} */
+// Only this project's own Supabase host may be fetched by /_next/image. The old
+// "*.supabase.co" wildcard let anyone point the optimizer at a file hosted in
+// THEIR OWN Supabase project (free to create), which widens abuse and exploit
+// surface on the image endpoint. Falls back to the wildcard only if the env var
+// is missing, so a misconfigured local setup still renders images.
+function supabaseImageHost() {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname;
+  } catch {
+    return "*.supabase.co";
+  }
+}
+
 const nextConfig = {
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "*.supabase.co",
+        hostname: supabaseImageHost(),
         pathname: "/storage/v1/object/public/**",
       },
     ],

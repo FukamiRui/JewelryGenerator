@@ -39,7 +39,10 @@ why, and **Known simplifications** for what was deliberately cut to get here.
    uses a PKCE flow that only completes correctly in the *same browser/tab*
    that started the sign-up. Opening it from a mail app or a different tab
    fails with a confusing `otp_expired` error that has nothing to do with
-   actual expiry.
+   actual expiry. **In production, turn "Confirm email" back ON.** The shop and
+   customer login pages already handle the "check your email to confirm your
+   account" state, so no code change is needed, and it stops fake or mistyped
+   addresses from creating accounts.
 5. Create a **public** Storage bucket named `design-images` (Storage → New bucket).
    "Public" only affects read access — the authenticated-upload INSERT policy
    needed for raw uploads (portfolio photo/video, reference photos, shop
@@ -77,6 +80,36 @@ why, and **Known simplifications** for what was deliberately cut to get here.
     — `lib/cron-auth.ts` accepts either convention. Spot prices won't exist
     until `/api/gold-rate/refresh` runs at least once; the simulator shows a
     clear "not available yet" error until then, not a silent $0.
+
+## Deploying to Vercel
+
+The app is deployed from the GitHub repo: every push to `main` triggers a
+production deploy. The checklist below is what actually had to be right.
+
+1. **Environment variables** (Vercel → Project → Settings → Environment
+   Variables, Production): every key in `.env.example` except the two optional
+   ones (`ANTHROPIC_API_KEY`, `FAL_VIDEO_MODEL_ENDPOINT`, safe to leave blank).
+   Use **live** Stripe keys in production. Env var changes only apply to the
+   *next* deploy, so redeploy after editing them.
+2. **`NEXT_PUBLIC_SITE_URL`** must be the exact public URL (for example
+   `https://your-domain.example`, no trailing slash). Stripe checkout, billing
+   portal, and Connect onboarding redirect back to it. Change the domain, change
+   this variable, then redeploy.
+3. **Stripe webhook**: create a **live-mode** endpoint pointing at
+   `https://<your-domain>/api/stripe/webhook` with the five events listed in
+   Setup step 9, and put its signing secret in `STRIPE_WEBHOOK_SECRET`. Choose
+   the classic "Webhook endpoint" destination with snapshot events, because the
+   handler reads the full event object. The test-mode webhook is separate and
+   can be deleted. If the domain changes, update this URL too.
+4. **Supabase redirect URLs** (Authentication → URL Configuration): add the
+   production domain, otherwise password-reset and email-confirmation links
+   cannot redirect back.
+5. **Cron**: see Setup step 10. `CRON_SECRET` must be set as a project env var.
+6. **Build-time safety**: no module may throw on a missing env var at import
+   time, or `next build` fails for the whole app (see **Security**). Keep env
+   checks inside functions that run per request.
+7. **Analytics**: `@vercel/analytics` is mounted in `app/layout.tsx`. It only
+   records on Vercel; enable it once under Project → Analytics.
 
 ## Auth model
 
@@ -717,17 +750,42 @@ A pre-launch hardening pass, in the order it's usually asked about:
   there's a concrete reason to.
 - **Password storage**: never touched directly — Supabase Auth owns
   hashing/storage entirely; the app only ever sees a session token.
-- **Dependency scan** (`npm audit`): clean except **Next.js 14.2.35 itself**,
-  which is the newest 14.2.x release but still carries several disclosed
-  advisories (mostly DoS/SSRF/cache-poisoning classes, a few rated High)
-  that are only fixed from Next.js 15/16 onward — see **Known
-  simplifications** below. Not patched in this pass: jumping two major
-  versions touches App Router internals and config keys (e.g.
-  `experimental.serverComponentsExternalPackages` is renamed in 15+) widely
-  enough that doing it silently, right before a launch, felt likelier to
-  introduce a fresh bug than to prevent one. Deliberate, flagged omission —
-  plan the Next.js upgrade as its own tested change, not a drive-by part of
-  a security pass.
+- **Dependency scan** (`npm audit --omit=dev`, re-run before publishing the
+  repo): `sharp` and `source-map-js` were patched with a plain `npm audit fix`
+  (no breaking changes, build and image processing re-verified). What remains is
+  **Next.js 14.2.35 itself** (plus the `postcss` copy bundled inside it). It is
+  the newest 14.2.x release, but a long list of advisories is only fixed in
+  15.5.x or 16.x, and several are rated Critical or High: remote code execution
+  through the image optimization endpoint (AVIF and SVG inputs), server-side
+  request forgery in rewrites and Server Actions, and denial of service in
+  Server Components. How much of that applies here:
+  - The app does **not** use Server Actions or `rewrites`, so those classes do
+    not apply.
+  - The app **does** use `next/image` everywhere, so `/_next/image` is live.
+    That is the highest-risk surface. As a mitigation, `next.config.js` now
+    allows only this project's own Supabase host (read from
+    `NEXT_PUBLIC_SUPABASE_URL`) instead of the old `*.supabase.co` wildcard, so
+    the optimizer can no longer be pointed at files hosted in someone else's
+    Supabase project. Files uploaded to our own public bucket are still
+    reachable, so this reduces the risk but does not remove it. Exposure on
+    Vercel may be lower than on a self-hosted server, but that was not
+    verified here, so treat the upgrade as pending rather than as a non-issue.
+  - **The real fix is upgrading Next.js** (15.5.x at minimum, 16.x preferred).
+    It is two major versions and touches App Router internals and config keys
+    (for example `experimental.serverComponentsExternalPackages` is renamed in
+    15+), so it should be its own branch with a full test pass, not a drive-by
+    change inside a security sweep. This is the one known open item.
+- **Secrets and env audit** (repo-wide, including full git history): no
+  Stripe, Supabase, fal.ai, Groq, or other credentials appear in any tracked
+  file or any past commit, and `.env.local` was never committed. `.env.example`
+  contains names only, with empty values (the sole non-empty value is the
+  localhost URL). Only three variables are public by design
+  (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+  `NEXT_PUBLIC_SITE_URL`), and no secret key is referenced from a client
+  component. `.gitignore` now blocks every `.env*` file except `.env.example`
+  (previously only `*.local` was covered) and `.vercel`. If a real key is ever
+  committed by accident, rotating it is mandatory, since deleting the file does
+  not remove it from history.
 
 ## Known simplifications (flagged, not silently skipped)
 - **No public shop directory/marketplace discovery, by design**: `app/shops`
